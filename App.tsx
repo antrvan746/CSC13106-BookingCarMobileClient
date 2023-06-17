@@ -24,6 +24,8 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import MainScreen from './src/screens/MainScreen';
+import SearchScreen from './src/screens/SearchScreen';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -32,8 +34,10 @@ type SectionProps = PropsWithChildren<{
 
 
 function App(): JSX.Element {
+  
+
   return (<SafeAreaView style={styles.sampleContainer}>
-    <Text style={styles.sampleTitle}>Ride Hailing Mobile Client</Text>
+    <SearchScreen />
   </SafeAreaView>)
 }
 
