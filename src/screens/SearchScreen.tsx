@@ -11,7 +11,7 @@ function SearchScreen(): JSX.Element {
     <View style={styles.headerSearchContainer}>
       <View style={[GlobalStyles.propShadow, styles.textInputWrapper]}>
         <View style={styles.iconWrapper}>
-          <Icon name="local-taxi" size={24} color={"#237FEB"} />
+          <Icon name="my-location" size={24} color={"#237FEB"} />
         </View>
         <TextInput style={styles.textInputStyle} />
       </View>

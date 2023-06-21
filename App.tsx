@@ -26,6 +26,10 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import MainScreen from './src/screens/MainScreen';
 import SearchScreen from './src/screens/SearchScreen';
+import RideScreen from './src/screens/RideScreen';
+import LocationItem from './src/components/LocationItem';
+import { Provider } from 'react-redux';
+import ReduxStore from './src/redux/store';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -34,22 +38,26 @@ type SectionProps = PropsWithChildren<{
 
 
 function App(): JSX.Element {
-  
 
-  return (<SafeAreaView style={styles.sampleContainer}>
-    <SearchScreen />
-  </SafeAreaView>)
+
+  return (
+    <Provider store={ReduxStore}>
+      <SafeAreaView style={styles.sampleContainer}>
+        <RideScreen />
+      </SafeAreaView>
+    </Provider>
+  )
 }
 
 const styles = StyleSheet.create({
   sampleTitle: {
     fontSize: 26,
     backgroundColor: "beige",
-    textAlign:"center",
+    textAlign: "center",
     fontWeight: "bold"
   },
   sampleContainer: {
-    flex:1,
+    flex: 1,
     alignContent: "center",
     justifyContent: "center"
   }
