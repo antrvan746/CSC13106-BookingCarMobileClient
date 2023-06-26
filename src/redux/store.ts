@@ -1,9 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
-import AppState from './AppState';
+import AppStateSlice from './AppState';
+import DebugMenuSlice from './DebugMenu';
+
 
 const ReduxStore = configureStore({
 	reducer: {
-    appState:  AppState.reducer
+    appState:  AppStateSlice.reducer,
+    debugMenu: DebugMenuSlice.reducer
   },
 })
 

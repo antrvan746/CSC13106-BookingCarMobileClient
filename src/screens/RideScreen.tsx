@@ -1,20 +1,28 @@
 import React from "react";
-import { PixelRatio, Pressable, StyleSheet, Text, TouchableHighlight, View } from "react-native";
-import { GlobalStyles } from "../styles/colors";
-import Icon from "react-native-vector-icons/MaterialIcons"
-import PriceTag from "../components/PriceTag";
+import {  StyleSheet, View } from "react-native";
 import BookVehicle from "../components/RideScreen/BookVehicle";
-import RideInfo from "../components/RideScreen/RideInfo";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectAppState, updateAppState } from "../redux/AppState";
+import { StackScreenProps } from "../types/Screens";
+import RideInfo from "../components/RideScreen/RideInfo";
 
 
-function RideScreen(): JSX.Element {
+function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
+  const appState = useAppSelector(selectAppState);
+  const dispatch = useAppDispatch();
+
+  const BookBtnClickHandler = () => {
+    dispatch(updateAppState({
+      state: "Finding",
+    }));
+  }
 
   return (<View style={styles.containerWrapper}>
     <View style={styles.mapContainer}></View>
     <View style={styles.actionBoxWrapper}>
-      <BookVehicle />
+      {
+        appState.state == "Book" ? <BookVehicle BookBtnPressCallBack={BookBtnClickHandler}  /> : <RideInfo />
+      }
     </View>
   </View>)
 }
@@ -38,7 +46,7 @@ const styles = StyleSheet.create({
   },
 
 
-  
+
 
 })
 

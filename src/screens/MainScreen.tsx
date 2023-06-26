@@ -4,17 +4,37 @@ import { StyleSheet, TextInput, View } from "react-native";
 import LocationItem from "../components/LocationItem";
 import { Text } from "react-native";
 import { GlobalStyles } from "../styles/colors";
+import { StackScreenProps } from "../types/Screens";
+import Icon from "react-native-vector-icons/MaterialIcons"
+import { TouchableHighlight } from "react-native";
+import { useAppDispatch } from "../redux/hooks";
+import { updateAppState } from "../redux/AppState";
 
-function MainScreen(): JSX.Element {
+function MainScreen({ navigation, route }: StackScreenProps): JSX.Element {
+  
+  const dispatch = useAppDispatch();
+
+  const searchLoactionPress = () =>{
+    dispatch(updateAppState({
+      state: "Search",
+    }));
+    navigation.replace("Search");
+  }
 
   return (<View style={styles.screenWrapper}>
     <View style={styles.headerWrapper}></View>
+
+
     <View style={styles.mainWrapper}>
-      <View
-        onTouchStart={(event)=>{}}
-        style={styles.searchTxtInputWapper}>
-        <TextInput style={styles.searchTxtInput} />
-      </View>
+      <TouchableHighlight activeOpacity={1} underlayColor="#DDDDDD" style={styles.searchTxtInputWapper}
+        onPress={searchLoactionPress}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Icon name="location-on" color={"#EB3223"} size={24} />
+          <Text style={{ fontSize: 18, fontWeight: "bold", color: GlobalStyles.black500.color }}>
+            Where to go ?
+          </Text>
+        </View>
+      </TouchableHighlight>
 
       <FlatList
         style={styles.listStyle}
@@ -36,20 +56,27 @@ const styles = StyleSheet.create({
   },
   mainWrapper: {
     flex: 3,
-    backgroundColor: "read",
     paddingTop: 25
   },
+
+
   searchTxtInputWapper: {
+    flexDirection: "row",
     height: 50,
-    backgroundColor: "yellow",
+    backgroundColor: GlobalStyles.mainWhite.color,
     position: "absolute",
     top: -25,
     left: 25,
     right: 25,
-    bottom: 0
+    bottom: 0,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    alignItems: "center",
+
   },
-  searchTxtInput: {
-    flex: 1,
+  iconWrapper: {
+    alignItems: "center",
+    justifyContent: "center"
   },
 
   listStyle: {

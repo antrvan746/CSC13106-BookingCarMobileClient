@@ -4,9 +4,10 @@ import { View } from "react-native";
 import { GlobalStyles } from "../styles/colors";
 import Icon from "react-native-vector-icons/MaterialIcons"
 import LocationItem from "../components/LocationItem";
+import { StackScreenProps } from "../types/Screens";
 
 
-function SearchScreen(): JSX.Element {
+function SearchScreen({navigation,route}:StackScreenProps): JSX.Element {
   return (<View style={styles.containerWrapper}>
     <View style={styles.headerSearchContainer}>
       <View style={[GlobalStyles.propShadow, styles.textInputWrapper]}>

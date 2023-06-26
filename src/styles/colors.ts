@@ -15,7 +15,9 @@ const GlobalStyles = StyleSheet.create({
 
   green500:{color:"#13B45D"},
   green400:{color:"#0A7362"},
-  green300:{color:"#5AB38B"}
+  green300:{color:"#5AB38B"},
+  searchBlue:{color:"#237FEB"},
+  searchRed:{color:"EB3223"}
 })
 
 export  {GlobalStyles};

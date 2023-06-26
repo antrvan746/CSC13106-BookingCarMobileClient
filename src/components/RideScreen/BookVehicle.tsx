@@ -2,23 +2,16 @@ import React from "react";
 import PriceTag from "../PriceTag";
 import { StyleSheet, Text, TouchableHighlight, View } from "react-native";
 import { GlobalStyles } from "../../styles/colors";
-import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { selectAppState, updateAppState } from "../../redux/AppState";
 
-function BookVehicle(): JSX.Element {
+interface BookVehicleProps{
+  BookBtnPressCallBack: () => void
+}
 
-  const appState = useAppSelector(selectAppState);
-  const dispatch = useAppDispatch();
+function BookVehicle({BookBtnPressCallBack}: BookVehicleProps): JSX.Element {
 
   const BookClickHandler = () => {
-    dispatch(updateAppState({
-      state: appState.state == "Finding" ? "Idle" : "Finding"
-    }));
-
-
+    BookBtnPressCallBack();
   }
-
-  console.log(`App state ${appState.state}`);
 
   return (<View>
     <PriceTag />
