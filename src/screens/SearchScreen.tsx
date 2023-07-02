@@ -1,27 +1,53 @@
 import React from "react";
-import { StyleSheet, TextInput, Text, FlatList } from "react-native";
+import { StyleSheet, TextInput, Text, FlatList, TextInputTextInputEventData, NativeSyntheticEvent } from "react-native";
 import { View } from "react-native";
 import { GlobalStyles } from "../styles/colors";
 import Icon from "react-native-vector-icons/MaterialIcons"
 import LocationItem from "../components/LocationItem";
 import { StackScreenProps } from "../types/Screens";
+import { useGetSuggestPlaceQuery, useLazyGetSuggestPlaceQuery } from "../query/GooglePlace";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
+interface SearchScreenProps extends StackScreenProps {
+  skip: boolean
+}
 
-function SearchScreen({navigation,route}:StackScreenProps): JSX.Element {
+function SearchScreen({ navigation, route, skip = true }: SearchScreenProps): JSX.Element {
+  const [queryTrigger, suggestions] = useLazyGetSuggestPlaceQuery();
+
+  console.log("Is Uninitialize", suggestions.isUninitialized);
+
+  function onSearchTextInput(e: NativeSyntheticEvent<TextInputTextInputEventData>) {
+    console.log(suggestions.data?.predictions.flatMap((d)=>d.description));
+    if (!suggestions.data) {
+      console.log("Fetching data");
+      queryTrigger({
+        input: "Le Van Tam Park",
+        lat: 10.788350595150893,
+        lon: 106.69378372372894,
+        radius: 500
+      })
+    }
+  }
+
   return (<View style={styles.containerWrapper}>
     <View style={styles.headerSearchContainer}>
       <View style={[GlobalStyles.propShadow, styles.textInputWrapper]}>
         <View style={styles.iconWrapper}>
           <Icon name="my-location" size={24} color={"#237FEB"} />
         </View>
-        <TextInput style={styles.textInputStyle} />
+        <TextInput
+          onTextInput={onSearchTextInput}
+          style={styles.textInputStyle} />
       </View>
 
       <View style={[GlobalStyles.propShadow, styles.textInputWrapper]}>
         <View style={styles.iconWrapper}>
           <Icon name="location-on" size={24} color={"#EB3223"} />
         </View>
-        <TextInput style={styles.textInputStyle} />
+        <TextInput
+          onTextInput={onSearchTextInput}
+          style={styles.textInputStyle} />
       </View>
     </View>
 

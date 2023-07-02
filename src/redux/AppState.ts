@@ -1,4 +1,4 @@
-import { SliceCaseReducers, ValidateSliceCaseReducers, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import { NavScreenNames, StackScreenProps } from "../types/Screens";
 

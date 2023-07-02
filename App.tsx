@@ -26,6 +26,8 @@ import DebugModal from './src/components/DebugModal';
 import { useAppDispatch } from './src/redux/hooks';
 import { updateDebugMenu } from './src/redux/DebugMenu';
 
+import {enableLatestRenderer} from 'react-native-maps';
+
 interface WrapperProps extends StackScreenProps {
   screen: JSX.Element
 }
@@ -53,7 +55,7 @@ function MyScreenWrapper({ screen,route,navigation }: WrapperProps) {
 }
 
 function App(): JSX.Element {
-
+  enableLatestRenderer();
   return (
     <Provider store={ReduxStore}>
       <NavigationContainer>

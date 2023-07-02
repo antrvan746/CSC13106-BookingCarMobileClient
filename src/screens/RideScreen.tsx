@@ -1,11 +1,13 @@
 import React from "react";
-import {  StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import BookVehicle from "../components/RideScreen/BookVehicle";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectAppState, updateAppState } from "../redux/AppState";
 import { StackScreenProps } from "../types/Screens";
 import RideInfo from "../components/RideScreen/RideInfo";
+import MapView, { Marker } from "react-native-maps";
 
+//google map place auto complete -> google map geocode
 
 function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
   const appState = useAppSelector(selectAppState);
@@ -18,10 +20,29 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
   }
 
   return (<View style={styles.containerWrapper}>
-    <View style={styles.mapContainer}></View>
+    <View style={styles.mapContainer}>
+      <MapView
+        initialRegion={{
+          latitude: 10.788350595150893,
+          longitude: 106.69378372372894,
+          latitudeDelta: 1,
+          longitudeDelta: 1,
+        }}
+        style={StyleSheet.absoluteFillObject} >
+        <Marker
+          key={1}
+          coordinate={{
+            latitude: 10.788350595150893,
+            longitude: 106.69378372372894
+          }}
+          title={"Le Van Tam Park"}
+          description={"Công viên Lê Văn Tám"}
+        />
+      </MapView>
+    </View>
     <View style={styles.actionBoxWrapper}>
       {
-        appState.state == "Book" ? <BookVehicle BookBtnPressCallBack={BookBtnClickHandler}  /> : <RideInfo />
+        appState.state == "Book" ? <BookVehicle BookBtnPressCallBack={BookBtnClickHandler} /> : <RideInfo />
       }
     </View>
   </View>)
