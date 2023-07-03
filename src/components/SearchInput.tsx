@@ -1,0 +1,105 @@
+import React, { createRef, useRef, useState } from "react";
+import { NativeSyntheticEvent, StyleSheet, TextInput, TextInputTextInputEventData, View } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import { GlobalStyles } from "../styles/colors";
+import { GooglePlaceSuggestList, useLazyGetSuggestPlaceQuery } from "../query/GooglePlace";
+
+export type SearchTxtInputProps = {
+  iconName: string,
+  color: string,
+  textValue?: string
+  onSuggestionFound?: (suggest: GooglePlaceSuggestList) => void,
+  onTextInputFocus?: () => void,
+  onTextInputBlur?: () => void
+}
+
+function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
+  const { textValue, iconName, color, onSuggestionFound,onTextInputFocus } = props;
+  const [queryTrigger, suggestions] = useLazyGetSuggestPlaceQuery();
+  const [isEditing,setIsEditing] = useState<boolean>(textValue ? false : true)
+  const lastFetchTime = useRef<number>(0);
+
+  function querySuggestion(text: string) {
+    console.log("Search text",text);
+
+    queryTrigger({
+      input: text,
+      lat: 10.788350595150893,
+      lon: 106.69378372372894,
+      radius: 5000
+    }).then((res) => (res.data && onSuggestionFound) ? onSuggestionFound(res.data) : null);
+  }
+
+  function onTextChangeText(text: string) {
+    const inputTxtLen = text.split(" ").length;
+
+    if (lastFetchTime.current) {
+      clearTimeout(lastFetchTime.current);
+    }
+
+    lastFetchTime.current = setTimeout(function () {
+      if (inputTxtLen > 4) {
+        querySuggestion(text)
+      }
+    }, 4000);
+
+    if(!isEditing){
+      setIsEditing(true);
+    }
+  }
+
+  function onTextFoucus(){
+    if(onTextInputFocus){
+      onTextInputFocus();
+    }
+  }
+
+  function onTextBlur(){
+    if(isEditing){
+      setIsEditing(false);
+    }
+  }
+
+  return (<View style={[GlobalStyles.propShadow, styles.textInputWrapper]}>
+    <View style={styles.iconWrapper}>
+      <Icon name={iconName} size={24} color={color} />
+    </View>
+    <TextInput
+      {...(!isEditing ? { value: textValue } : {})}
+      onFocus={onTextFoucus}
+      onBlur={onTextBlur}
+      onChangeText={onTextChangeText}
+      style={styles.textInputStyle} />
+
+  </View>)
+};
+
+const styles = StyleSheet.create({
+  textInputWrapper: {
+    width: "74%",
+    paddingHorizontal: 5,
+    margin: 4,
+    borderRadius: 10,
+    flexDirection: "row",
+    elevation: 20
+  },
+  textInputStyle: {
+    backgroundColor: GlobalStyles.mainWhite.color,
+    padding: 2,
+    flex: 1,
+    fontSize: 16,
+    minHeight: 36,
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  iconWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: GlobalStyles.mainWhite.color,
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+    aspectRatio: 1
+  }
+});
+
+export default SearchTxtInput;

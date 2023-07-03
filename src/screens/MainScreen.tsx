@@ -11,10 +11,10 @@ import { useAppDispatch } from "../redux/hooks";
 import { updateAppState } from "../redux/AppState";
 
 function MainScreen({ navigation, route }: StackScreenProps): JSX.Element {
-  
+
   const dispatch = useAppDispatch();
 
-  const searchLoactionPress = () =>{
+  const searchLoactionPress = () => {
     dispatch(updateAppState({
       state: "Search",
     }));
@@ -39,7 +39,7 @@ function MainScreen({ navigation, route }: StackScreenProps): JSX.Element {
       <FlatList
         style={styles.listStyle}
         data={["1", "2", "3"]}
-        renderItem={({ item }) => { return <LocationItem /> }} />
+        renderItem={({ item }) => <LocationItem description="Local Pool" place_id="" />} />
     </View>
   </View>)
 }

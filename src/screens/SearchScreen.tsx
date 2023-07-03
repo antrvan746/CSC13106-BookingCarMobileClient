@@ -1,76 +1,94 @@
-import React from "react";
-import { StyleSheet, TextInput, Text, FlatList, TextInputTextInputEventData, NativeSyntheticEvent } from "react-native";
+import React, { useRef, useState } from "react";
+import { StyleSheet, TextInput, Text, FlatList, TextInputTextInputEventData, NativeSyntheticEvent, TextInputFocusEventData, ScrollView } from "react-native";
 import { View } from "react-native";
 import { GlobalStyles } from "../styles/colors";
 import Icon from "react-native-vector-icons/MaterialIcons"
 import LocationItem from "../components/LocationItem";
 import { StackScreenProps } from "../types/Screens";
-import { useGetSuggestPlaceQuery, useLazyGetSuggestPlaceQuery } from "../query/GooglePlace";
+import { GooglePlaceSuggest, GooglePlaceSuggestList, useGetSuggestPlaceQuery, useLazyGetSuggestPlaceQuery } from "../query/GooglePlace";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
+import LocationFlatList from "../components/LocationFlatList";
+import ExpandableLocationFlatList from "../components/ExpandableLocationFlatList";
+import SearchTxtInput from "../components/SearchInput";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { selectRideLocationState, setDropOffState, setPickUpState, setRideLocationState } from "../redux/RideLocation";
 
 interface SearchScreenProps extends StackScreenProps {
   skip: boolean
 }
 
-function SearchScreen({ navigation, route, skip = true }: SearchScreenProps): JSX.Element {
-  const [queryTrigger, suggestions] = useLazyGetSuggestPlaceQuery();
+function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
+  const [isSearching, setSearching] = useState<GooglePlaceSuggestList | null>(null);
 
-  console.log("Is Uninitialize", suggestions.isUninitialized);
+  const rideLocState = useAppSelector(selectRideLocationState);
+  const dispatch = useAppDispatch();
 
-  function onSearchTextInput(e: NativeSyntheticEvent<TextInputTextInputEventData>) {
-    console.log(suggestions.data?.predictions.flatMap((d)=>d.description));
-    if (!suggestions.data) {
-      console.log("Fetching data");
-      queryTrigger({
-        input: "Le Van Tam Park",
-        lat: 10.788350595150893,
-        lon: 106.69378372372894,
-        radius: 500
-      })
+  const setRideState = useRef<"Pick" | "Drop" | null>(null);
+
+  function onSuggestionFound(suggest: GooglePlaceSuggestList) {
+    setSearching(suggest);
+  }
+
+  function onSearchPickUpFocus() {
+    console.log("Foucus pickup")
+    setRideState.current = "Pick";
+  }
+
+  function onSearchDropOffFocus() {
+    console.log("Foucus dropoff")
+    setRideState.current = "Drop";
+  }
+
+  function searchItemSelect(place: GooglePlaceSuggest) {
+    if (setRideState.current) {
+      if(setRideState.current == "Pick"){
+        dispatch(setPickUpState({
+          place_id: place.place_id,
+          description: place.description
+        }));
+      }else{
+        dispatch(setDropOffState({
+          place_id: place.place_id,
+          description: place.description
+        }));
+      }
     }
+    //setPickUp(place);
+    setSearching(null);
   }
 
   return (<View style={styles.containerWrapper}>
     <View style={styles.headerSearchContainer}>
-      <View style={[GlobalStyles.propShadow, styles.textInputWrapper]}>
-        <View style={styles.iconWrapper}>
-          <Icon name="my-location" size={24} color={"#237FEB"} />
-        </View>
-        <TextInput
-          onTextInput={onSearchTextInput}
-          style={styles.textInputStyle} />
-      </View>
+      <SearchTxtInput
+        {...(rideLocState.pickUp ? { textValue: rideLocState.pickUp.description } : {})}
+        iconName={"my-location"} color={"#237FEB"}
+        onTextInputFocus={onSearchPickUpFocus}
+        onSuggestionFound={onSuggestionFound} />
+      <SearchTxtInput
+        {...(rideLocState.dropOff ? { textValue: rideLocState.dropOff.description } : {})}
+        iconName={"location-on"} color={"#EB3223"}
+        onTextInputFocus={onSearchDropOffFocus}
+        onSuggestionFound={onSuggestionFound} />
 
-      <View style={[GlobalStyles.propShadow, styles.textInputWrapper]}>
-        <View style={styles.iconWrapper}>
-          <Icon name="location-on" size={24} color={"#EB3223"} />
-        </View>
-        <TextInput
-          onTextInput={onSearchTextInput}
-          style={styles.textInputStyle} />
-      </View>
     </View>
 
+    {isSearching ? null :
+      <View style={{ flex: 1, backgroundColor: "blue" }} >
+        <ExpandableLocationFlatList listProps={{ locations: { predictions: [] } }}
+          mainText={"Saved place"} viewAllText={"View All"} />
 
-    <View style={styles.savedListContainer}>
-      <View style={{ flexDirection: "row" }}>
-        <Text style={{ flex: 1 }}>Saved Place</Text>
-        <Text style={{ flex: 1, textAlign: "right" }}>View All</Text>
+        <ExpandableLocationFlatList listProps={{ locations: { predictions: [] } }}
+          mainText={"Recent place"} viewAllText={"View All"} />
       </View>
-      <FlatList
-        style={styles.listStyle}
-        data={[1, 2, 3]}
-        renderItem={({ item }) => { return (<LocationItem />) }} />
-    </View>
+    }
 
-    <View style={styles.savedListContainer}>
-      <Text style={{ fontSize: 18 }}>Recent place</Text>
+    {(!isSearching || isSearching.predictions.length <= 0) ? null :
+      <View style={{ flex: 1, backgroundColor: "pink" }}>
+        <LocationFlatList onItemClickHandle={searchItemSelect} locations={isSearching}
+        />
+      </View>
+    }
 
-      <FlatList
-        style={styles.listStyle}
-        data={[1, 2, 3]}
-        renderItem={({ item }) => { return (<LocationItem />) }} />
-    </View>
   </View>)
 }
 
@@ -98,13 +116,14 @@ const styles = StyleSheet.create({
     elevation: 20
   },
   textInputStyle: {
-    backgroundColor: GlobalStyles.mainWhite.color,
+    backgroundColor: "blue", //GlobalStyles.mainWhite.color,
     padding: 2,
     flex: 1,
     fontSize: 16,
     minHeight: 36,
     borderTopRightRadius: 8,
-    borderBottomRightRadius: 8
+    borderBottomRightRadius: 8,
+
   },
   iconWrapper: {
     alignItems: "center",
@@ -116,16 +135,8 @@ const styles = StyleSheet.create({
   },
 
 
-  savedListContainer: {
-    marginTop: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    backgroundColor: GlobalStyles.mainWhite.color,
-    flexDirection: "column",
-  },
-  listStyle: {
-    marginTop: 10,
-  }
+
+
 })
 
 export default SearchScreen;
