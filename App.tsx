@@ -27,6 +27,7 @@ import { useAppDispatch } from './src/redux/hooks';
 import { updateDebugMenu } from './src/redux/DebugMenu';
 
 import {enableLatestRenderer} from 'react-native-maps';
+import LoginScreen from './src/screens/LoginScreen';
 
 interface WrapperProps extends StackScreenProps {
   screen: JSX.Element
@@ -61,7 +62,7 @@ function App(): JSX.Element {
       <NavigationContainer>
         <NavStack.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName='Main'>
+          initialRouteName='Login'>
 
           <NavStack.Screen name="Main">
             {
@@ -78,6 +79,12 @@ function App(): JSX.Element {
           <NavStack.Screen name="Ride">
             {
               (props) => <MyScreenWrapper {...props} screen={<RideScreen {...props} />} />
+            }
+          </NavStack.Screen>
+          
+          <NavStack.Screen name="Login">
+            {
+              (props) => <MyScreenWrapper {...props} screen={<LoginScreen />} />
             }
           </NavStack.Screen>
 

@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import { NavScreenNames, StackScreenProps } from "../types/Screens";
 
-const validAppState = ["Idle" , "Search", "Book" , "Finding" , "Waiting" , "Going"] as const;
+const validAppState = ["Login","Idle" , "Search", "Book" , "Finding" , "Waiting" , "Going"] as const;
 
 export type AppStateName = typeof validAppState[number];
 export const AppStateNameValues = [...validAppState];
