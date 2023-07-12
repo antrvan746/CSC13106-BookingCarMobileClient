@@ -1,15 +1,17 @@
 import { configureStore} from '@reduxjs/toolkit';
 import AppStateSlice from './AppState';
 import DebugMenuSlice from './DebugMenu';
-import RideLocationSlice from './RideLocation';
+import RideLocationSlice, { rideLocationSlice } from './RideLocation';
 import googlePlaceApi from '../query/GooglePlace';
 import googleGeocodeApi from '../query/GoogleGeocode';
+import LoginStateSlice from './LoginState';
 
 const ReduxStore = configureStore({
 	reducer: {
     appState:  AppStateSlice.reducer,
     debugMenu: DebugMenuSlice.reducer,
     rideLocation: RideLocationSlice.reducer,
+    loginState: LoginStateSlice.reducer,
     [googlePlaceApi.reducerPath]: googlePlaceApi.reducer,
     [googleGeocodeApi.reducerPath]:googleGeocodeApi.reducer
   },

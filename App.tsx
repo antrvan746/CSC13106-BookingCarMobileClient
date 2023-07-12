@@ -23,11 +23,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList, StackScreenProps } from './src/types/Screens';
 import DebugModal from './src/components/DebugModal';
-import { useAppDispatch } from './src/redux/hooks';
+import { useAppDispatch, useAppSelector } from './src/redux/hooks';
 import { updateDebugMenu } from './src/redux/DebugMenu';
 
-import {enableLatestRenderer} from 'react-native-maps';
+import { enableLatestRenderer } from 'react-native-maps';
 import LoginScreen from './src/screens/LoginScreen';
+import { selectLoginState } from './src/redux/LoginState';
 
 interface WrapperProps extends StackScreenProps {
   screen: JSX.Element
@@ -36,7 +37,9 @@ interface WrapperProps extends StackScreenProps {
 const NavStack = createNativeStackNavigator<RootStackParamList>();
 
 
-function MyScreenWrapper({ screen,route,navigation }: WrapperProps) {
+function MyScreenWrapper({ screen, route, navigation }: WrapperProps) {
+  const loginState = useAppSelector(selectLoginState);
+
   const dispath = useAppDispatch();
 
   const onDebugMenuPress = () => {
@@ -51,7 +54,9 @@ function MyScreenWrapper({ screen,route,navigation }: WrapperProps) {
       onPress={onDebugMenuPress}>
       <Icon name='menu' size={32} color={"black"} />
     </Pressable>
-    {screen}
+    {
+      !loginState.user ? <LoginScreen {...{ navigation, route }} /> : screen
+    }
   </SafeAreaView>)
 }
 
@@ -81,10 +86,10 @@ function App(): JSX.Element {
               (props) => <MyScreenWrapper {...props} screen={<RideScreen {...props} />} />
             }
           </NavStack.Screen>
-          
+
           <NavStack.Screen name="Login">
             {
-              (props) => <MyScreenWrapper {...props} screen={<LoginScreen />} />
+              (props) => <MyScreenWrapper {...props} screen={<LoginScreen {...props} />} />
             }
           </NavStack.Screen>
 
