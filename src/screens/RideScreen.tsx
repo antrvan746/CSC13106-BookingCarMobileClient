@@ -8,6 +8,7 @@ import RideInfo from "../components/RideScreen/RideInfo";
 import MapView, { Marker } from "react-native-maps";
 import { selectRideLocationState, setRideLocationState } from "../redux/RideLocation";
 import { useLazyGetGeocodeFromIdQuery } from "../query/GoogleGeocode";
+import MapViewDirections from "react-native-maps-directions";
 
 //google map place auto complete -> google map geocode
 
@@ -31,7 +32,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
   }>()
 
   async function DropOff() {
-    if (!rideLocState.dropOff ) {
+    if (!rideLocState.dropOff) {
       return null;
     }
 
@@ -66,10 +67,10 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     const pick = await PickUp();
     const drop = await DropOff();
 
-    console.log(rideLocState.dropOff?.place_id,rideLocState.pickUp?.place_id);
+    console.log(rideLocState.dropOff?.place_id, rideLocState.pickUp?.place_id);
 
-    console.log("Drop",drop);
-    console.log("Pick",pick);
+    console.log("Drop", drop);
+    console.log("Pick", pick);
     if (pick && drop) {
       setCoordinate({ pick, drop });
     }
@@ -83,26 +84,27 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     return geoData ? geoData : null;
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     const LeVanTamPark = [10.788329516745137, 106.69377299541277];
     const TanDinhChurch = [10.788540300830162, 106.69074746365344];
-    if(!rideLocState.dropOff && !rideLocState.pickUp){
+    if (!rideLocState.dropOff && !rideLocState.pickUp) {
       dispatch(setRideLocationState({
-        pickUp:{
-          description:"Le Van Tam Park",
-          place_id:"123",
-          detail:{name:"Le Van Tam Park",address:"123",lat:LeVanTamPark[0],lon:LeVanTamPark[1]}
+        pickUp: {
+          description: "Le Van Tam Park",
+          place_id: "123",
+          detail: { name: "Le Van Tam Park", address: "123", lat: LeVanTamPark[0], lon: LeVanTamPark[1] }
         },
-        dropOff:{
-          description:"Tan Dinh Church",
-          place_id:"123",
-          detail:{name:"Tan Dinh Church",address:"123",lat:TanDinhChurch[0],lon:TanDinhChurch[1]}
+        dropOff: {
+          description: "Tan Dinh Church",
+          place_id: "123",
+          detail: { name: "Tan Dinh Church", address: "123", lat: TanDinhChurch[0], lon: TanDinhChurch[1] }
         }
       }));
       GetCoordinate();
+    } else {
+      GetCoordinate();
     }
-    GetCoordinate();
-  },[]);
+  }, []);
 
   const mapViewRef = createRef<MapView>();
 
@@ -138,20 +140,14 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
               longitudeDelta: 0.008,
             }}
             style={StyleSheet.absoluteFillObject} >
-            <Marker
-              key={1}
-              coordinate={{
-                latitude: coordinate.pick[0],
-                longitude: coordinate.pick[1],
-              }} 
-              description="Pick up"/>
-              <Marker
-              key={2}
-              coordinate={{
-                latitude: coordinate.drop[0],
-                longitude: coordinate.drop[1],
-              }} 
-              description="Drop off"/>
+            <Marker key={1} description="Pick up"
+              coordinate={{ latitude: coordinate.pick[0], longitude: coordinate.pick[1], }} />
+            <Marker key={2} description="Drop off"
+              coordinate={{ latitude: coordinate.drop[0], longitude: coordinate.drop[1], }} />
+            <MapViewDirections strokeWidth={3} strokeColor={"hotpink"}
+              apikey="AIzaSyDekTKGUSYNDS2O17iZV8Lw9l0ysEWtT_A"
+              origin={{ latitude: coordinate.pick[0], longitude: coordinate.pick[1], }}
+              destination={{ latitude: coordinate.drop[0], longitude: coordinate.drop[1], }} />
           </MapView>
       }
 
