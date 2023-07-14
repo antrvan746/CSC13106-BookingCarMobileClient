@@ -6,7 +6,7 @@ import { selectAppState, updateAppState } from "../redux/AppState";
 import { StackScreenProps } from "../types/Screens";
 import RideInfo from "../components/RideScreen/RideInfo";
 import MapView, { Marker } from "react-native-maps";
-import { selectRideLocationState } from "../redux/RideLocation";
+import { selectRideLocationState, setRideLocationState } from "../redux/RideLocation";
 import { useLazyGetGeocodeFromIdQuery } from "../query/GoogleGeocode";
 
 //google map place auto complete -> google map geocode
@@ -84,7 +84,24 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
   }
 
   useEffect(()=>{
-    GetCoordinate()
+    const LeVanTamPark = [10.788329516745137, 106.69377299541277];
+    const TanDinhChurch = [10.788540300830162, 106.69074746365344];
+    if(!rideLocState.dropOff && !rideLocState.pickUp){
+      dispatch(setRideLocationState({
+        pickUp:{
+          description:"Le Van Tam Park",
+          place_id:"123",
+          detail:{name:"Le Van Tam Park",address:"123",lat:LeVanTamPark[0],lon:LeVanTamPark[1]}
+        },
+        dropOff:{
+          description:"Tan Dinh Church",
+          place_id:"123",
+          detail:{name:"Tan Dinh Church",address:"123",lat:TanDinhChurch[0],lon:TanDinhChurch[1]}
+        }
+      }));
+      GetCoordinate();
+    }
+    GetCoordinate();
   },[]);
 
   const mapViewRef = createRef<MapView>();
