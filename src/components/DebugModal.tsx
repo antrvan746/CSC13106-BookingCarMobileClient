@@ -19,7 +19,7 @@ function DebugModal({ navigation, route }: StackScreenProps): JSX.Element {
   }
 
   const stateIsChangable = (newState: AppStateName): boolean => {
-    if(newState == "Login"){
+    if (newState == "Login") {
       return true;
     }
 
@@ -40,6 +40,8 @@ function DebugModal({ navigation, route }: StackScreenProps): JSX.Element {
         return newState == "Going" || newState == "Finding";
       case "Going":
         return newState == "Idle" || newState == "Finding";
+      case "Login":
+        return true;
       default:
         return false;
     }
@@ -47,7 +49,7 @@ function DebugModal({ navigation, route }: StackScreenProps): JSX.Element {
   }
 
   const onChangeStatePress = (state: AppStateName) => {
-    if(state == "Login" && route.name != "Login"){
+    if (state == "Login" && route.name != "Login") {
       navigation.replace("Login");
     }
 

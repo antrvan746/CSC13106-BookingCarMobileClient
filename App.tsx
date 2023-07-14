@@ -27,8 +27,8 @@ import { useAppDispatch, useAppSelector } from './src/redux/hooks';
 import { updateDebugMenu } from './src/redux/DebugMenu';
 
 import { enableLatestRenderer } from 'react-native-maps';
-import LoginScreen from './src/screens/LoginScreen';
 import { selectLoginState } from './src/redux/LoginState';
+import LoginScreen from './src/screens/LoginSelectScreen';
 
 interface WrapperProps extends StackScreenProps {
   screen: JSX.Element
@@ -43,9 +43,7 @@ function MyScreenWrapper({ screen, route, navigation }: WrapperProps) {
   const dispath = useAppDispatch();
 
   const onDebugMenuPress = () => {
-    dispath(updateDebugMenu({
-      isOpen: true
-    }))
+    dispath(updateDebugMenu({isOpen: true}));
   }
 
   return (<SafeAreaView style={styles.sampleContainer}>
@@ -54,9 +52,10 @@ function MyScreenWrapper({ screen, route, navigation }: WrapperProps) {
       onPress={onDebugMenuPress}>
       <Icon name='menu' size={32} color={"black"} />
     </Pressable>
-    {
+    {/* {
       !loginState.user ? <LoginScreen {...{ navigation, route }} /> : screen
-    }
+    } */}
+    {screen}
   </SafeAreaView>)
 }
 

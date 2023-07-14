@@ -26,6 +26,7 @@ function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
   const setRideState = useRef<"Pick" | "Drop" | null>(null);
 
   function onSuggestionFound(suggest: GooglePlaceSuggestList) {
+    console.log("Suggest",suggest);
     setSearching(suggest);
   }
 
