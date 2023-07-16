@@ -4,16 +4,17 @@ import Icon from "react-native-vector-icons/Feather";
 import { PixelRatio } from "react-native";
 import { GlobalStyles } from "../styles/colors";
 import { GooglePlaceSuggest } from "../query/GooglePlace";
+import { LocationCoordinate } from "../types/LocationItem";
 
-export interface LocationItemProps extends GooglePlaceSuggest {
-  clickHandle?: (suggest:GooglePlaceSuggest) => void
+export interface LocationItemProps extends LocationCoordinate {
+  clickHandle?: (suggest:LocationCoordinate) => void
 }
 
 
 function LocationItem(props: LocationItemProps): JSX.Element {
   const clickHandle = props.clickHandle;
-  const name = props.detail ? props.detail.name : props.description;
-  const address = props.detail ? props.detail.address : "";
+  const name = props?.name || "Unknown Name" ;
+  const address = props?.address || "Unknow Address";
   
   function onClickHandle(e: GestureResponderEvent) {
     if (clickHandle) {

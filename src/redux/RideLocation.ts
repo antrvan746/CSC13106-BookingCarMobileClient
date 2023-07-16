@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import { GooglePlaceSuggest } from "../query/GooglePlace";
+import { LocationCoordinate } from "../types/LocationItem";
 
 export type RideLocationState = {
-  pickUp: GooglePlaceSuggest | null,
-  dropOff: GooglePlaceSuggest | null
+  pickUp: LocationCoordinate | null,
+  dropOff: LocationCoordinate | null
 } 
 
 const initalRideLocationState:RideLocationState = {
@@ -17,13 +18,13 @@ export const rideLocationSlice = createSlice({
   initialState: initalRideLocationState,
 
   reducers:{
-    setPickUpState:(state,action:PayloadAction<GooglePlaceSuggest>) =>{
+    setPickUpState:(state,action:PayloadAction<LocationCoordinate>) =>{
       return{
         ...state,
         pickUp: action.payload
       }
     },
-    setDropOffState:(state,action:PayloadAction<GooglePlaceSuggest>) =>{
+    setDropOffState:(state,action:PayloadAction<LocationCoordinate>) =>{
       return{
         ...state,
         dropOff: action.payload

@@ -3,31 +3,55 @@ import { NativeSyntheticEvent, StyleSheet, TextInput, TextInputTextInputEventDat
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { GlobalStyles } from "../styles/colors";
 import { GooglePlaceSuggestList, useLazyGetSuggestPlaceQuery } from "../query/GooglePlace";
+import { useLazyGetSuggestQueryLocationIQ } from "../query/LocationIQ";
+import { LocationCoordinate } from "../types/LocationItem";
 
 export type SearchTxtInputProps = {
   iconName: string,
   color: string,
-  textValue?: string
-  onSuggestionFound?: (suggest: GooglePlaceSuggestList) => void,
+  textValue?: string,
+  service: "Google" | "LocationIQ"
+  onSuggestionFound?: (suggest: LocationCoordinate[]) => void,
   onTextInputFocus?: () => void,
   onTextInputBlur?: () => void
 }
 
 function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
-  const { textValue, iconName, color, onSuggestionFound,onTextInputFocus } = props;
-  const [queryTrigger, suggestions] = useLazyGetSuggestPlaceQuery();
-  const [isEditing,setIsEditing] = useState<boolean>(textValue ? false : true)
+  const { textValue, iconName, color, onSuggestionFound, onTextInputFocus } = props;
+  
+  const [queryTrigger, suggestions] =  useLazyGetSuggestPlaceQuery();
+  const [queryTriggerIQ,suggestionsIQ] = useLazyGetSuggestQueryLocationIQ();
+
+  const [isEditing, setIsEditing] = useState<boolean>(textValue ? false : true)
   const lastFetchTime = useRef<number>(0);
 
-  function querySuggestion(text: string) {
-    console.log("Search text",text);
+  async function querySuggestion(text: string) {
+    console.log("Search text", text);
+    
+    if(props.service === "LocationIQ"){
+      const result = await queryTriggerIQ({apiKey:"key",search:text});
+      if(result.data && onSuggestionFound){
+        const sug:LocationCoordinate[] = result.data.map(s => ({
+          name: s.display_name,
+          id: s.place_id,
+          lat: s.lat,
+          lon: s.lon
+        }));
+        onSuggestionFound(sug);
+      }
 
-    queryTrigger({
-      input: text,
-      lat: 10.788350595150893,
-      lon: 106.69378372372894,
-      radius: 5000
-    }).then((res) => (res.data && onSuggestionFound) ? onSuggestionFound(res.data) : null);
+    }else{
+      const result = await queryTrigger({input: text,lat: 10.788350595150893,lon: 106.69378372372894,radius: 5000});
+      if(result.data && onSuggestionFound){
+        const sug:LocationCoordinate[] = result.data.predictions.map((s) => ({
+          name: s.description,
+          id: s.place_id
+        })) ;
+        onSuggestionFound(sug);
+      }
+    }
+
+    
   }
 
   function onTextChangeText(text: string) {
@@ -43,19 +67,19 @@ function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
       }
     }, 4000);
 
-    if(!isEditing){
+    if (!isEditing) {
       setIsEditing(true);
     }
   }
 
-  function onTextFoucus(){
-    if(onTextInputFocus){
+  function onTextFoucus() {
+    if (onTextInputFocus) {
       onTextInputFocus();
     }
   }
 
-  function onTextBlur(){
-    if(isEditing){
+  function onTextBlur() {
+    if (isEditing) {
       setIsEditing(false);
     }
   }

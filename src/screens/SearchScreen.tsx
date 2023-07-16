@@ -1,35 +1,39 @@
 import React, { useRef, useState } from "react";
-import { StyleSheet, TextInput, Text, FlatList, TextInputTextInputEventData, NativeSyntheticEvent, TextInputFocusEventData, ScrollView } from "react-native";
+import { StyleSheet } from "react-native";
 import { View } from "react-native";
 import { GlobalStyles } from "../styles/colors";
-import Icon from "react-native-vector-icons/MaterialIcons"
-import LocationItem from "../components/LocationItem";
 import { StackScreenProps } from "../types/Screens";
-import { GooglePlaceSuggest, GooglePlaceSuggestList, useGetSuggestPlaceQuery, useLazyGetSuggestPlaceQuery } from "../query/GooglePlace";
-import { skipToken } from "@reduxjs/toolkit/dist/query";
 import LocationFlatList from "../components/LocationFlatList";
 import ExpandableLocationFlatList from "../components/ExpandableLocationFlatList";
 import SearchTxtInput from "../components/SearchInput";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectRideLocationState, setDropOffState, setPickUpState, setRideLocationState } from "../redux/RideLocation";
+import { LocationCoordinate } from "../types/LocationItem";
 
 interface SearchScreenProps extends StackScreenProps {
   skip: boolean
 }
 
 function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
-  const [isSearching, setSearching] = useState<GooglePlaceSuggestList | null>(null);
+  const [isSearching, setSearching] = useState<LocationCoordinate[] | null>(null);
 
   const rideLocState = useAppSelector(selectRideLocationState);
   const dispatch = useAppDispatch();
 
   const setRideState = useRef<"Pick" | "Drop" | null>(null);
 
-  function onSuggestionFound(suggest: GooglePlaceSuggestList) {
-    console.log("Suggest",suggest);
+  function onPickSuggestionFound(suggest: LocationCoordinate[]) {
+    console.log("Suggest", suggest);
+    setRideState.current = "Pick";
     setSearching(suggest);
+    //setSearching(suggest);
   }
-
+  function onPickDropSuggestionFound(suggest: LocationCoordinate[]) {
+    console.log("Suggest", suggest);
+    setRideState.current = "Drop";
+    setSearching(suggest);
+    //setSearching(suggest);
+  }
   function onSearchPickUpFocus() {
     console.log("Foucus pickup")
     setRideState.current = "Pick";
@@ -40,18 +44,12 @@ function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
     setRideState.current = "Drop";
   }
 
-  function searchItemSelect(place: GooglePlaceSuggest) {
+  function searchItemSelect(place: LocationCoordinate) {
     if (setRideState.current) {
-      if(setRideState.current == "Pick"){
-        dispatch(setPickUpState({
-          place_id: place.place_id,
-          description: place.description
-        }));
-      }else{
-        dispatch(setDropOffState({
-          place_id: place.place_id,
-          description: place.description
-        }));
+      if (setRideState.current == "Pick") {
+        dispatch(setPickUpState(place));
+      } else {
+        dispatch(setDropOffState(place));
       }
     }
     //setPickUp(place);
@@ -61,29 +59,37 @@ function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
   return (<View style={styles.containerWrapper}>
     <View style={styles.headerSearchContainer}>
       <SearchTxtInput
-        {...(rideLocState.pickUp ? { textValue: rideLocState.pickUp.description } : {})}
+        service="LocationIQ"
+        {...(rideLocState.pickUp ?
+          { textValue: rideLocState.pickUp.name || rideLocState.pickUp.address || "Unknow" }
+          :
+          {}
+        )}
         iconName={"my-location"} color={"#237FEB"}
-        onTextInputFocus={onSearchPickUpFocus}
-        onSuggestionFound={onSuggestionFound} />
+        onSuggestionFound={onPickSuggestionFound} />
       <SearchTxtInput
-        {...(rideLocState.dropOff ? { textValue: rideLocState.dropOff.description } : {})}
+        service="LocationIQ"
+        {...(rideLocState.dropOff ?
+          { textValue: rideLocState.dropOff.name || rideLocState.dropOff.address || "Unknow" }
+          :
+          {}
+        )}
         iconName={"location-on"} color={"#EB3223"}
-        onTextInputFocus={onSearchDropOffFocus}
-        onSuggestionFound={onSuggestionFound} />
+        onSuggestionFound={onPickDropSuggestionFound} />
 
     </View>
 
     {isSearching ? null :
       <View style={{ flex: 1, backgroundColor: "blue" }} >
-        <ExpandableLocationFlatList listProps={{ locations: { predictions: [] } }}
+        <ExpandableLocationFlatList listProps={{ locations: [] }}
           mainText={"Saved place"} viewAllText={"View All"} />
 
-        <ExpandableLocationFlatList listProps={{ locations: { predictions: [] } }}
+        <ExpandableLocationFlatList listProps={{ locations: [] }}
           mainText={"Recent place"} viewAllText={"View All"} />
       </View>
     }
 
-    {(!isSearching || isSearching.predictions.length <= 0) ? null :
+    {(!isSearching || isSearching.length <= 0) ? null :
       <View style={{ flex: 1, backgroundColor: "pink" }}>
         <LocationFlatList onItemClickHandle={searchItemSelect} locations={isSearching}
         />

@@ -2,6 +2,7 @@ import React, { useState, useRef, createRef, useEffect } from 'react';
 import { LoginStackSreenProps } from '../types/LoginScreens';
 import { Pressable, StyleSheet, Text, TextInput, TouchableHighlight, View } from 'react-native';
 import auth, { FirebaseAuthTypes as FBAuth } from '@react-native-firebase/auth';
+import database  from "@react-native-firebase/database"
 
 interface PhoneOTPProps extends LoginStackSreenProps {
   onSuccess: () => void
@@ -22,6 +23,10 @@ function PhoneLoginOTP({ navigation, route, onSuccess }: PhoneOTPProps) {
     console.log(user ? `Login successfully ${user.phoneNumber}` : "Log out success fully");
     //dispatch(setLoginState({ user }));
     if (user) {
+      database().ref("/LocationIQ_KEY")
+      .once("value").then(snap => {
+        console.log("Location IQ key: ",snap.val());
+      })
       //onSuccess();
     }
   }

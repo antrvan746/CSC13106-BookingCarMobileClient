@@ -36,15 +36,16 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       return null;
     }
 
-    if (rideLocState.dropOff.detail?.lon && rideLocState.dropOff.detail?.lat) {
-      return [rideLocState.dropOff.detail.lat, rideLocState.dropOff.detail.lon];
+    if (rideLocState.dropOff?.lon && rideLocState.dropOff?.lat) {
+      return [rideLocState.dropOff.lat, rideLocState.dropOff.lon];
     }
 
-    const data = await QueryLocation(rideLocState.dropOff.place_id);
-    if (!data) {
-      return data;
+    if(rideLocState.dropOff.id){
+      const data = await QueryLocation(rideLocState.dropOff.id);
+      if (!data) {return data;}
+      return [data.results[0].geometry.location.lat, data.results[0].geometry.location.lng];
     }
-    return [data.results[0].geometry.location.lat, data.results[0].geometry.location.lng];
+    return null
   }
 
   async function PickUp() {
@@ -52,22 +53,26 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       return null;
     }
 
-    if (rideLocState.pickUp.detail?.lon && rideLocState.pickUp.detail?.lat) {
-      return [rideLocState.pickUp.detail.lat, rideLocState.pickUp.detail.lon];
+    if (rideLocState.pickUp.lon && rideLocState.pickUp.lat) {
+      return [rideLocState.pickUp.lat, rideLocState.pickUp.lon];
     }
 
-    const data = await QueryLocation(rideLocState.pickUp.place_id);
-    if (!data) {
-      return data;
+    if(rideLocState.pickUp.id){
+      const data = await QueryLocation(rideLocState.pickUp.id);
+      if (!data) {
+        return data;
+      }
+      return [data.results[0].geometry.location.lat, data.results[0].geometry.location.lng];
     }
-    return [data.results[0].geometry.location.lat, data.results[0].geometry.location.lng];
+    
+    return null;
   }
 
   async function GetCoordinate() {
     const pick = await PickUp();
     const drop = await DropOff();
 
-    console.log(rideLocState.dropOff?.place_id, rideLocState.pickUp?.place_id);
+    console.log(rideLocState.dropOff?.id, rideLocState.pickUp?.id);
 
     console.log("Drop", drop);
     console.log("Pick", pick);
@@ -90,14 +95,12 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     if (!rideLocState.dropOff && !rideLocState.pickUp) {
       dispatch(setRideLocationState({
         pickUp: {
-          description: "Le Van Tam Park",
-          place_id: "123",
-          detail: { name: "Le Van Tam Park", address: "123", lat: LeVanTamPark[0], lon: LeVanTamPark[1] }
+          name: "Le Van Tam Park", id: "123",
+          lat: LeVanTamPark[0], lon: LeVanTamPark[1]
         },
         dropOff: {
-          description: "Tan Dinh Church",
-          place_id: "123",
-          detail: { name: "Tan Dinh Church", address: "123", lat: TanDinhChurch[0], lon: TanDinhChurch[1] }
+          name: "Tan Dinh Church",id: "123",
+          lat: TanDinhChurch[0], lon: TanDinhChurch[1]
         }
       }));
       GetCoordinate();
