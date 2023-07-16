@@ -18,7 +18,8 @@ function LocationItem(props: LocationItemProps): JSX.Element {
   
   function onClickHandle(e: GestureResponderEvent) {
     if (clickHandle) {
-      clickHandle(props);
+      const {name,id,lat,lon,address} = props;
+      clickHandle({name,id,lat,lon,address});
     }
   }
 

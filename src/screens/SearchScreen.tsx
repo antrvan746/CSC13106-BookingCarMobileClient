@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { View } from "react-native";
 import { GlobalStyles } from "../styles/colors";
 import { StackScreenProps } from "../types/Screens";
@@ -89,10 +89,12 @@ function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
       </View>
     }
 
-    {(!isSearching || isSearching.length <= 0) ? null :
+    {(!isSearching) ? null :
       <View style={{ flex: 1, backgroundColor: "pink" }}>
-        <LocationFlatList onItemClickHandle={searchItemSelect} locations={isSearching}
-        />
+        {
+          isSearching.length <= 0 ? <Text>{"Can't find any location"}</Text> : null
+        }
+        <LocationFlatList onItemClickHandle={searchItemSelect} locations={isSearching} />
       </View>
     }
 

@@ -16,11 +16,8 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 const NavStack = createNativeStackNavigator<LoginStackParam>();
 
 function GoogleLoginButton() {
-  GoogleSignin.configure({
-    webClientId: '352689544618-2pci7cq3oava74cttlb8vrdfp2gdn1ql.apps.googleusercontent.com',
-  });
+  
 
-  const loginState = useAppSelector(selectLoginState);
   const dispatch = useAppDispatch();
   const onAuthStateChange: FBAuth.AuthListenerCallback = async function (userData) {
     //console.log(userData);
@@ -28,15 +25,17 @@ function GoogleLoginButton() {
       dispatch(setLoginState({ user: null }));
       return;
     }
+    console.log("Login success");
     const { email, phoneNumber, photoURL, providerId, uid, displayName } = userData;
+    console.log("Getting location key");
     const locationIQKey = (await database().ref("/LocationIQ_KEY").once("value")).val();
     if (locationIQKey) {
       console.log("Login with locationIQ key", locationIQKey);
-      /*
+
       dispatch(setLoginState({
         user: { email, phoneNumber, photoURL, providerId, uid, displayName, locationIQKey }
       }));
-      */
+
     } else {
       console.log("Cant get location IQ key", locationIQKey);
     }
@@ -48,9 +47,18 @@ function GoogleLoginButton() {
   }, []);
 
   async function GoogleLoginPress() {
-    const result = await GoogleSignin.signIn();
-    const googleCredential = auth.GoogleAuthProvider.credential(result.idToken);
-    return auth().signInWithCredential(googleCredential);
+    try {
+      await GoogleSignin.configure({
+        webClientId: '352689544618-38jhvc2keshgmssvulcv6cke3v8hun6l.apps.googleusercontent.com',
+      });
+
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const result = await GoogleSignin.signIn();
+      const googleCredential = auth.GoogleAuthProvider.credential(result.idToken);
+      return (await auth().signInWithCredential(googleCredential));
+    } catch (e) {
+      console.log("Login error", JSON.stringify(e));
+    }
   }
 
   return (<TouchableHighlight activeOpacity={0.6} underlayColor="#DDDDDD" style={{ borderRadius: 12 }}
@@ -67,10 +75,24 @@ function LoginSelectScreen({ navigation, route }: LoginStackSreenProps) {
     navigation.navigate("Phone");
   }
 
+  const loginState = useAppSelector(selectLoginState);
 
+  function logout() {
+    auth().signOut();
+  }
 
   return (<View style={styles.screenContainer}>
     <View style={[styles.loginComponentContainer]}>
+
+      {
+        !auth().currentUser ? null :
+          <TouchableHighlight activeOpacity={0.6} underlayColor="#DDDDDD" style={{ borderRadius: 12, marginBottom: 12 }}
+            onPress={logout} >
+            <View style={styles.selectLoginWrapper}>
+              <Text style={styles.selectLoginText}>Logout</Text>
+            </View>
+          </TouchableHighlight>
+      }
 
       <GoogleLoginButton />
 

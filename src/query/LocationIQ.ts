@@ -1,12 +1,14 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { ArrayElement } from '../types/Utilis'
+
 
 export type LocationIQ_SuggestItem = {
   place_id: string,
-  lat: number,
-  lon: number,
+  lat: string,
+  lon: string,
   display_name: string
 }
+
+
 
 type LoactionIQ_SuggestGetParams = {
   apiKey: string,
