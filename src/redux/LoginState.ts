@@ -1,6 +1,7 @@
 import { FirebaseAuthTypes as FBAuth } from '@react-native-firebase/auth';
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { RootState } from './store';
+import { UserDetailInfo } from '../query/UserData';
 
 export type LoginState = {
   user: null | {
@@ -10,7 +11,8 @@ export type LoginState = {
     photoURL: string | null;
     providerId: string;
     uid: string;
-    locationIQKey?:string
+    locationIQKey?:string,
+    detail?: UserDetailInfo
   }
 }
 

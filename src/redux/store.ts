@@ -6,6 +6,7 @@ import googlePlaceApi from '../query/GooglePlace';
 import googleGeocodeApi from '../query/GoogleGeocode';
 import LoginStateSlice from './LoginState';
 import locationIQApi from '../query/LocationIQ';
+import UserDetailApi from '../query/UserData';
 
 
 const ReduxStore = configureStore({
@@ -16,12 +17,14 @@ const ReduxStore = configureStore({
     loginState: LoginStateSlice.reducer,
     [googlePlaceApi.reducerPath]: googlePlaceApi.reducer,
     [googleGeocodeApi.reducerPath]:googleGeocodeApi.reducer,
-    [locationIQApi.reducerPath]:locationIQApi.reducer
+    [locationIQApi.reducerPath]:locationIQApi.reducer,
+    [UserDetailApi.reducerPath]:UserDetailApi.reducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat([
     googlePlaceApi.middleware,
     googleGeocodeApi.middleware,
-    locationIQApi.middleware
+    locationIQApi.middleware,
+    UserDetailApi.middleware
   ]),
   
 })
