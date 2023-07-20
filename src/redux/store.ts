@@ -7,6 +7,7 @@ import googleGeocodeApi from '../query/GoogleGeocode';
 import LoginStateSlice from './LoginState';
 import locationIQApi from '../query/LocationIQ';
 import UserDetailApi from '../query/UserData';
+import RideWsStateSlice from './RideWsState';
 
 
 const ReduxStore = configureStore({
@@ -15,6 +16,7 @@ const ReduxStore = configureStore({
     debugMenu: DebugMenuSlice.reducer,
     rideLocation: RideLocationSlice.reducer,
     loginState: LoginStateSlice.reducer,
+    rideWsState: RideWsStateSlice.reducer,
     [googlePlaceApi.reducerPath]: googlePlaceApi.reducer,
     [googleGeocodeApi.reducerPath]:googleGeocodeApi.reducer,
     [locationIQApi.reducerPath]:locationIQApi.reducer,

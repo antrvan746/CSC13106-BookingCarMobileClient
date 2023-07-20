@@ -29,6 +29,7 @@ import { updateDebugMenu } from './src/redux/DebugMenu';
 import { enableLatestRenderer } from 'react-native-maps';
 import { selectLoginState } from './src/redux/LoginState';
 import LoginScreen from './src/screens/LoginSelectScreen';
+import RideStatusBar from './src/components/RideStatusBar';
 
 interface WrapperProps extends StackScreenProps {
   screen: JSX.Element
@@ -43,7 +44,7 @@ function MyScreenWrapper({ screen, route, navigation }: WrapperProps) {
   const dispath = useAppDispatch();
 
   const onDebugMenuPress = () => {
-    dispath(updateDebugMenu({isOpen: true}));
+    dispath(updateDebugMenu({ isOpen: true }));
   }
 
   return (<SafeAreaView style={styles.sampleContainer}>
@@ -56,6 +57,10 @@ function MyScreenWrapper({ screen, route, navigation }: WrapperProps) {
       !loginState.user ? <LoginScreen {...{ navigation, route }} /> : screen
     } */}
     {screen}
+
+    <View style={{position:"absolute",bottom:12,left:12,right:12}}>
+      <RideStatusBar />
+    </View>
   </SafeAreaView>)
 }
 
