@@ -1,9 +1,10 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import Icon from "react-native-vector-icons/MaterialIcons"
 import { GlobalStyles } from "../../styles/colors"
 import { useAppSelector } from "../../redux/hooks"
 import { selectAppState } from "../../redux/AppState"
+import RideWs from "../../query/websocket/RideWs"
 
 function WaitingDriver() {
   return (
@@ -31,6 +32,10 @@ function GoingWithDriver() {
 }
 
 function DriverInfo() {
+  useEffect(()=>{
+    RideWs.GlobalRideWs.Connect();
+  },[]);
+
   return (<View style={styles.infoWrapper}>
     <View style={styles.driverInfoWrapper}>
       <View style={styles.iconWrapper}>

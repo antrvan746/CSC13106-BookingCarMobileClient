@@ -161,11 +161,12 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
   }
 
   useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return () => {
-      console.log("Unsub login listener");
-      subscriber();
-    }; // unsubscribe on unmount
+    // const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    // return () => {
+    //   console.log("Unsub login listener");
+    //   subscriber();
+    // }; 
+    // unsubscribe on unmount
   }, []);
 
 

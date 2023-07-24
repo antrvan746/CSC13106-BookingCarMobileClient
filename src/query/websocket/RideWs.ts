@@ -57,7 +57,10 @@ class RideWs {
   }
 
   public Close() {
-    try { this.ws?.close(); } catch (e) {
+    try {
+      this.ws?.close();
+      this.ws = undefined;
+    } catch (e) {
       console.log("Web socket closing error: ", e);
     }
   }
@@ -70,4 +73,6 @@ class RideWs {
 
 }
 
-export default RideWs;
+export default {
+  GlobalRideWs: new RideWs({})
+} as const;
