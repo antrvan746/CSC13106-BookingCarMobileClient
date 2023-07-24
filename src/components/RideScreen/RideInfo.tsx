@@ -4,7 +4,8 @@ import Icon from "react-native-vector-icons/MaterialIcons"
 import { GlobalStyles } from "../../styles/colors"
 import { useAppSelector } from "../../redux/hooks"
 import { selectAppState } from "../../redux/AppState"
-import RideWs from "../../query/websocket/RideWs"
+import RideWs from "../../query/PureWeb/RideWs"
+import DriverWaitXHR from "../../query/PureWeb/DriverWaitXHR"
 
 function WaitingDriver() {
   return (
@@ -34,6 +35,7 @@ function GoingWithDriver() {
 function DriverInfo() {
   useEffect(()=>{
     RideWs.GlobalRideWs.Connect();
+    DriverWaitXHR.GlobalDriverWaithXHR.Connect();
   },[]);
 
   return (<View style={styles.infoWrapper}>

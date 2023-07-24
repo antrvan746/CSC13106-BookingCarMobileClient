@@ -6,7 +6,7 @@ import { GlobalStyles } from "../styles/colors";
 import { selectRideWsState } from "../redux/RideWsState";
 import ReduxStore from "../redux/store";
 
-import RideWs from "../query/websocket/RideWs";
+import RideWs from "../query/PureWeb/RideWs";
 
 function RideStatusBar(): JSX.Element | null {
   const rideWsState = useAppSelector(selectRideWsState);
