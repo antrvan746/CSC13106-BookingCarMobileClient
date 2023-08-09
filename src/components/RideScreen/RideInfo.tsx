@@ -1,11 +1,11 @@
 import React, { useEffect } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { Alert, Modal, StyleSheet, Text, View } from "react-native"
 import Icon from "react-native-vector-icons/MaterialIcons"
 import { GlobalStyles } from "../../styles/colors"
-import { useAppSelector } from "../../redux/hooks"
-import { selectAppState } from "../../redux/AppState"
-import RideWs from "../../query/PureWeb/RideWs"
-import DriverWaitXHR from "../../query/PureWeb/DriverWaitXHR"
+import { useAppDispatch, useAppSelector } from "../../redux/hooks"
+import { selectAppState, updateAppState } from "../../redux/AppState"
+import GlobalServices from "../../query/Services/GlobalServices"
+
 
 function WaitingDriver() {
   return (
@@ -32,11 +32,9 @@ function GoingWithDriver() {
   </View>)
 }
 
+
+
 function DriverInfo() {
-  useEffect(()=>{
-    RideWs.GlobalRideWs.Connect();
-    DriverWaitXHR.GlobalDriverWaithXHR.Connect();
-  },[]);
 
   return (<View style={styles.infoWrapper}>
     <View style={styles.driverInfoWrapper}>
@@ -58,7 +56,21 @@ function DriverInfo() {
 
 function RideInfo(): JSX.Element {
   const appState = useAppSelector(selectAppState);
+  const dispatch = useAppDispatch();
+  useEffect(()=>{
+    console.log("Connecting to websocket")
+    GlobalServices.RideWs.Connect();
 
+    GlobalServices.RideWs.client_listeners.onDriverFound = (i)=>{
+      dispatch(updateAppState({state:"Waiting"}));
+      Alert.alert("Driver found",` We found a driver for you \n Driver id: ${i.driver_id}`,[
+        {
+          text:"Ok"
+        }
+      ]);
+    }
+
+  })
   return (<View>
 
     {appState.state == "Finding" ? <FindingDriver /> : null}

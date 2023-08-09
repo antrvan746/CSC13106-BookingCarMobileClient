@@ -30,6 +30,7 @@ import { enableLatestRenderer } from 'react-native-maps';
 import { selectLoginState } from './src/redux/LoginState';
 import LoginScreen from './src/screens/LoginSelectScreen';
 import RideStatusBar from './src/components/RideStatusBar';
+import RideWs from './src/query/Services/RideWs';
 
 interface WrapperProps extends StackScreenProps {
   screen: JSX.Element
@@ -58,9 +59,7 @@ function MyScreenWrapper({ screen, route, navigation }: WrapperProps) {
     } */}
     {screen}
 
-    <View style={{position:"absolute",bottom:12,left:12,right:12}}>
-      <RideStatusBar />
-    </View>
+    
   </SafeAreaView>)
 }
 

@@ -101,18 +101,8 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
   const [userDetailAddTrigger] = useAddUserDetailMutation();
 
   const onAuthStateChanged: FBAuth.AuthListenerCallback = async function (user) {
-    const queryOrCreateUserDetail = async function (phone: string, name: string, email?: string,) {
-      const { status: getStatus, data: getData } = await userDetailApiTrigger({
-        email: email || undefined,
-        phone: phoneNumber || undefined
-      });
-
-      if (getStatus === "fulfilled" && getData[0]) {
-        console.log("User Get");
-        return getData[0];
-      }
-
-      console.log("User create");
+    const CreateUserDetail = async function (phone: string, name: string, email?: string,) {
+      
       try {
         return await userDetailAddTrigger({ email, phone, name }).unwrap();
       } catch (e) {
@@ -123,10 +113,10 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
     }
 
 
-    // if (loginState.user && auth().currentUser) {
-    //   console.log("User has already logged in with API key", loginState.user.locationIQKey);
-    //   return;
-    // }
+    if (loginState.user && auth().currentUser) {
+      console.log("User has already logged in with API key", loginState.user.locationIQKey);
+      return;
+    }
 
     console.log(user ? `Login successfully ${user.phoneNumber}` : "Log out success fully");
 
@@ -138,8 +128,8 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
     console.log("Login success");
     const { email, phoneNumber, photoURL, providerId, uid, displayName } = user;
 
-    const userDetailQuery = queryOrCreateUserDetail(
-      phoneNumber || "123456",
+    const userDetailQuery = CreateUserDetail(
+      phoneNumber || "0",
       displayName || "Not named user",
       email || undefined
     );
@@ -161,12 +151,12 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
   }
 
   useEffect(() => {
-    // const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    // return () => {
-    //   console.log("Unsub login listener");
-    //   subscriber();
-    // }; 
-    // unsubscribe on unmount
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return () => {
+      console.log("Unsub login listener");
+      subscriber();
+    }; 
+    //unsubscribe on unmount
   }, []);
 
 

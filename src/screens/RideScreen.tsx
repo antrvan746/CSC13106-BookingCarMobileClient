@@ -5,11 +5,12 @@ import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectAppState, updateAppState } from "../redux/AppState";
 import { StackScreenProps } from "../types/Screens";
 import RideInfo from "../components/RideScreen/RideInfo";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Polyline } from "react-native-maps";
 import { selectRideLocationState, setRideLocationState } from "../redux/RideLocation";
 import { useLazyGetGeocodeFromIdQuery } from "../query/GoogleGeocode";
 import MapViewDirections from "react-native-maps-directions";
-
+import { LocationIQ_Directions, useLazyGetRouteQuery } from "../query/LocationIQ";
+import polyline from "@mapbox/polyline"
 //google map place auto complete -> google map geocode
 
 //Le Van Tam Park
@@ -19,12 +20,24 @@ const mockInitalRegion = {
   latitudeDelta: 0.0001,
   longitudeDelta: 0.0001,
 }
+function DecodePolyline(code: string): { latitude: number, longitude: number }[] {
+  const coord = polyline.decode(code, 5)
+  return coord.map(v => ({
+    latitude: v[0],
+    longitude: v[1]
+  }))
+}
+
+
 
 function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
   const appState = useAppSelector(selectAppState);
   const dispatch = useAppDispatch();
   const [queryTrigger] = useLazyGetGeocodeFromIdQuery();
   const rideLocState = useAppSelector(selectRideLocationState);
+  const [routeTrigger, routing] = useLazyGetRouteQuery();
+
+  //console.log(JSON.stringify(routing.data?.routes));
 
   const [coordinate, setCoordinate] = useState<{
     pick: number[],
@@ -40,9 +53,9 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       return [rideLocState.dropOff.lat, rideLocState.dropOff.lon];
     }
 
-    if(rideLocState.dropOff.id){
+    if (rideLocState.dropOff.id) {
       const data = await QueryLocation(rideLocState.dropOff.id);
-      if (!data) {return data;}
+      if (!data) { return data; }
       return [data.results[0].geometry.location.lat, data.results[0].geometry.location.lng];
     }
     return null
@@ -57,14 +70,14 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       return [rideLocState.pickUp.lat, rideLocState.pickUp.lon];
     }
 
-    if(rideLocState.pickUp.id){
+    if (rideLocState.pickUp.id) {
       const data = await QueryLocation(rideLocState.pickUp.id);
       if (!data) {
         return data;
       }
       return [data.results[0].geometry.location.lat, data.results[0].geometry.location.lng];
     }
-    
+
     return null;
   }
 
@@ -99,7 +112,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
           lat: LeVanTamPark[0], lon: LeVanTamPark[1]
         },
         dropOff: {
-          name: "Tan Dinh Church",id: "123",
+          name: "Tan Dinh Church", id: "123",
           lat: TanDinhChurch[0], lon: TanDinhChurch[1]
         }
       }));
@@ -107,6 +120,14 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     } else {
       GetCoordinate();
     }
+
+    // routeTrigger({
+    //   apiKey: "pk.6290201b4314f0a31f29a0867aa0bf85",
+    //   coord: [
+    //     { lat: LeVanTamPark[0], lon: LeVanTamPark[1] },
+    //     { lat: TanDinhChurch[0], lon: TanDinhChurch[1] }
+    //   ]
+    // }).catch((err) => console.log("Routing error: ", err))
   }, []);
 
   const mapViewRef = createRef<MapView>();
@@ -147,10 +168,11 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
               coordinate={{ latitude: coordinate.pick[0], longitude: coordinate.pick[1], }} />
             <Marker key={2} description="Drop off"
               coordinate={{ latitude: coordinate.drop[0], longitude: coordinate.drop[1], }} />
-            <MapViewDirections strokeWidth={3} strokeColor={"hotpink"}
-              apikey="AIzaSyDekTKGUSYNDS2O17iZV8Lw9l0ysEWtT_A"
-              origin={{ latitude: coordinate.pick[0], longitude: coordinate.pick[1], }}
-              destination={{ latitude: coordinate.drop[0], longitude: coordinate.drop[1], }} />
+            {
+              !routing.data || routing.data.routes.length <= 0 ? null : //null
+                <Polyline fillColor="hotpink" strokeWidth={3} strokeColor="hotpink"
+                  coordinates={DecodePolyline(routing.data.routes[0].geometry)} />
+            }
           </MapView>
       }
 

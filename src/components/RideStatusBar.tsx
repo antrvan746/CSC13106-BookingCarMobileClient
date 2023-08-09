@@ -6,48 +6,48 @@ import { GlobalStyles } from "../styles/colors";
 import { selectRideWsState } from "../redux/RideWsState";
 import ReduxStore from "../redux/store";
 
-import RideWs from "../query/PureWeb/RideWs";
 
 function RideStatusBar(): JSX.Element | null {
-  const rideWsState = useAppSelector(selectRideWsState);
+  // const rideWsState = useAppSelector(selectRideWsState);
 
-  const wsRef = useRef(RideWs.GlobalRideWs);
+  // const wsRef = useRef(RideWs.GlobalRideWs);
 
-  useEffect(() => {
-    wsRef.current.client_listeners = { onOpen, onMessage, onError, onClose };
-  }, [])
+  // useEffect(() => {
+  //   wsRef.current.client_listeners = { onOpen, onMessage, onError, onClose };
+  // }, [])
 
-  if (rideWsState.state === "Available") {
-    wsRef.current.Connect();
-  } else {
-    wsRef.current.Close();
-  }
+  // if (rideWsState.state === "Available") {
+  //   wsRef.current.Connect();
+  // } else {
+  //   wsRef.current.Close();
+  // }
 
-  function onOpen() {
+  // function onOpen() {
 
-  }
+  // }
 
-  function onMessage(e: WebSocketMessageEvent) {
+  // function onMessage(e: WebSocketMessageEvent) {
 
-  }
+  // }
 
-  function onError(e: WebSocketErrorEvent) {
+  // function onError(e: WebSocketErrorEvent) {
 
-  }
+  // }
 
-  function onClose(e: WebSocketCloseEvent) {
+  // function onClose(e: WebSocketCloseEvent) {
 
-  }
+  // }
 
 
-  return (<>
-    {
-      rideWsState.state === "Unavailable" ? null :
-        <View style={styles.rootConatiner}>
-          <Text>{`Socket state ${rideWsState.state}`}</Text>
-        </View>
-    }
-  </>);
+  // return (<>
+  //   {
+  //     rideWsState.state === "Unavailable" ? null :
+  //       <View style={styles.rootConatiner}>
+  //         <Text>{`Socket state ${rideWsState.state}`}</Text>
+  //       </View>
+  //   }
+  // </>);
+  return null;
 }
 
 const styles = StyleSheet.create({

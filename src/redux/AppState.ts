@@ -13,7 +13,7 @@ export type AppState = {
 const appStateName = "AppState"
 
 const initalAppState: AppState = {
-	state: "Idle"
+	state: "Login"
 }
 
 

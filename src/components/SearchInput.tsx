@@ -3,7 +3,7 @@ import { NativeSyntheticEvent, StyleSheet, TextInput, TextInputTextInputEventDat
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { GlobalStyles } from "../styles/colors";
 import { GooglePlaceSuggestList, useLazyGetSuggestPlaceQuery } from "../query/GooglePlace";
-import { useLazyGetSuggestQueryLocationIQ } from "../query/LocationIQ";
+import { useLazyGetSuggestQuery } from "../query/LocationIQ";
 import { LocationCoordinate } from "../types/LocationItem";
 import { useSelector } from "react-redux";
 import { selectLoginState } from "../redux/LoginState";
@@ -25,7 +25,7 @@ function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
   const loginState = useSelector(selectLoginState);
 
   const [queryTrigger, suggestions] = useLazyGetSuggestPlaceQuery();
-  const [queryTriggerIQ, suggestionsIQ] = useLazyGetSuggestQueryLocationIQ();
+  const [queryTriggerIQ, suggestionsIQ] = useLazyGetSuggestQuery();
 
   const [isEditing, setIsEditing] = useState<boolean>(textValue ? false : true)
   const lastFetchTime = useRef<number>(0);
@@ -33,15 +33,15 @@ function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
 
   async function querySuggestion(text: string) {
     console.log("Search text", text);
-    if (!loginState.user || !loginState.user.locationIQKey) {
-      console.log("User error");
-      return;
-    }
+    // if (!loginState.user || !loginState.user.locationIQKey) {
+    //   console.log("User error");
+    //   return;
+    // }
 
 
     if (props.service === "LocationIQ") {
       const result = await queryTriggerIQ({
-        apiKey: loginState.user.locationIQKey,
+        apiKey: loginState?.user?.locationIQKey || "pk.6290201b4314f0a31f29a0867aa0bf85",
         search: text
       });
       if (result.data && onSuggestionFound) {
