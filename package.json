@@ -26,6 +26,7 @@
     "react-native-phone-number-input": "^2.1.0",
     "react-native-safe-area-context": "^4.6.3",
     "react-native-screens": "^3.21.1",
+    "react-native-url-polyfill": "^2.0.0",
     "react-native-vector-icons": "^9.2.0",
     "react-redux": "^8.1.1"
   },
@@ -35,6 +36,7 @@
     "@babel/runtime": "^7.20.0",
     "@react-native-community/eslint-config": "^3.2.0",
     "@tsconfig/react-native": "^2.0.2",
+    "@types/eventsource": "^1.1.11",
     "@types/jest": "^29.2.1",
     "@types/mapbox__polyline": "^1.0.2",
     "@types/react": "^18.0.24",
