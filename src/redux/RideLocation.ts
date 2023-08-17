@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
-import { GooglePlaceSuggest } from "../query/GooglePlace";
 import { LocationCoordinate } from "../types/LocationItem";
 
 export type RideLocationState = {
   pickUp: LocationCoordinate | null,
-  dropOff: LocationCoordinate | null
+  dropOff: LocationCoordinate | null,
+
 } 
 
 const initalRideLocationState:RideLocationState = {

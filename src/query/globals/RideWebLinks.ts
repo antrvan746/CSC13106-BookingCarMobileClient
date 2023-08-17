@@ -5,4 +5,4 @@ export default {
   user_api,
   client_trip_ws,
   driver_waiting_xhr
-} as const;
+} ;

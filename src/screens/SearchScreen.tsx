@@ -22,6 +22,7 @@ function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
 
   const setRideState = useRef<"Pick" | "Drop" | null>(null);
 
+
   function onPickSuggestionFound(suggest: LocationCoordinate[]) {
     console.log("Suggest", suggest);
     setRideState.current = "Pick";
@@ -48,8 +49,11 @@ function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
     if (setRideState.current) {
       if (setRideState.current == "Pick") {
         dispatch(setPickUpState(place));
+        console.log("Pickup", place.lon, place.lat)
+
       } else {
         dispatch(setDropOffState(place));
+        console.log("Drop off", place.lon, place.lat)
       }
     }
     //setPickUp(place);

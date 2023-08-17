@@ -1,4 +1,4 @@
-import React, { createRef, useEffect, useState } from "react";
+import React, { createRef, useEffect, useRef, useState } from "react";
 import { LayoutChangeEvent, StyleSheet, View } from "react-native";
 import BookVehicle from "../components/RideScreen/BookVehicle";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
@@ -11,6 +11,8 @@ import { useLazyGetGeocodeFromIdQuery } from "../query/GoogleGeocode";
 import MapViewDirections from "react-native-maps-directions";
 import { LocationIQ_Directions, useLazyGetRouteQuery } from "../query/LocationIQ";
 import polyline from "@mapbox/polyline"
+import GlobalServices from "../query/Services/GlobalServices";
+import { RindeRequestInfo } from "../query/Services/RideWs";
 //google map place auto complete -> google map geocode
 
 //Le Van Tam Park
@@ -36,8 +38,14 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
   const [queryTrigger] = useLazyGetGeocodeFromIdQuery();
   const rideLocState = useAppSelector(selectRideLocationState);
   const [routeTrigger, routing] = useLazyGetRouteQuery();
-
+  const rideReqInfo = useRef<RindeRequestInfo>({
+    sadr: "", eadr: "",
+    slat: 0, slon: 0, elat: 0, elon: 0,
+    user_id: "abc"
+  })
   //console.log(JSON.stringify(routing.data?.routes));
+
+  const [driverCoord, setDriverCoord] = useState<{ lon?: number, lat?: number }>({})
 
   const [coordinate, setCoordinate] = useState<{
     pick: number[],
@@ -91,6 +99,22 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     console.log("Pick", pick);
     if (pick && drop) {
       setCoordinate({ pick, drop });
+      routeTrigger({
+        coord: [
+          { lat: pick[0], lon: pick[1] },
+          { lat: drop[0], lon: drop[1] }
+        ],
+        apiKey: "pk.6290201b4314f0a31f29a0867aa0bf85"
+      })
+
+      rideReqInfo.current = {
+        slat: pick[0], slon: pick[1],
+        sadr: rideLocState.pickUp?.address || rideLocState.pickUp?.id || "",
+        elat: drop[0], elon: drop[1],
+        eadr: rideLocState.dropOff?.address || rideLocState.dropOff?.id || "",
+        user_id: "test_user"
+      }
+
     }
   }
 
@@ -121,13 +145,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       GetCoordinate();
     }
 
-    // routeTrigger({
-    //   apiKey: "pk.6290201b4314f0a31f29a0867aa0bf85",
-    //   coord: [
-    //     { lat: LeVanTamPark[0], lon: LeVanTamPark[1] },
-    //     { lat: TanDinhChurch[0], lon: TanDinhChurch[1] }
-    //   ]
-    // }).catch((err) => console.log("Routing error: ", err))
+
   }, []);
 
   const mapViewRef = createRef<MapView>();
@@ -136,6 +154,10 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     dispatch(updateAppState({
       state: "Finding",
     }));
+    if (coordinate) {
+      GlobalServices.RideWs.Connect(rideReqInfo.current);
+    }
+
   }
 
   function onMapLayout(event: LayoutChangeEvent) {
@@ -148,6 +170,11 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
         animated: false
       });
     }
+  }
+
+  function OnDriverChangeLoc(lon: number, lat: number) {
+    setDriverCoord({ lon, lat });
+    console.log("Get driver location",lon,lat);
   }
 
   return (<View style={styles.containerWrapper}>
@@ -168,9 +195,16 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
               coordinate={{ latitude: coordinate.pick[0], longitude: coordinate.pick[1], }} />
             <Marker key={2} description="Drop off"
               coordinate={{ latitude: coordinate.drop[0], longitude: coordinate.drop[1], }} />
+
+            {
+              !driverCoord.lat || !driverCoord.lon ? null :
+                <Marker key={3} description="Driver" pinColor="blue"
+                  coordinate={{ latitude: driverCoord.lat, longitude: driverCoord.lon }} />
+            }
+
             {
               !routing.data || routing.data.routes.length <= 0 ? null : //null
-                <Polyline fillColor="hotpink" strokeWidth={3} strokeColor="hotpink"
+                <Polyline fillColor="hotpink" strokeWidth={5} strokeColor="hotpink"
                   coordinates={DecodePolyline(routing.data.routes[0].geometry)} />
             }
           </MapView>
@@ -179,7 +213,10 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     </View>
     <View style={styles.actionBoxWrapper}>
       {
-        appState.state == "Book" ? <BookVehicle BookBtnPressCallBack={BookBtnClickHandler} /> : <RideInfo />
+        appState.state == "Book" ?
+          <BookVehicle BookBtnPressCallBack={BookBtnClickHandler} />
+          :
+          <RideInfo onDriverUpdate={OnDriverChangeLoc} />
       }
     </View>
   </View>)

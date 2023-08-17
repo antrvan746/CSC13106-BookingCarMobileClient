@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
-import { NavScreenNames, StackScreenProps } from "../types/Screens";
 
 const validAppState = ["Login","Idle" , "Search", "Book" , "Finding" , "Waiting" , "Going"] as const;
 

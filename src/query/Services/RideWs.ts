@@ -7,8 +7,20 @@ interface SocketListener {
   onClose: ((e: WebSocketCloseEvent) => void)
 }
 
-interface DriverInfo{
-  driver_id:string
+interface DriverInfo {
+  driver_id: string
+}
+
+export interface RindeRequestInfo {
+  "slon": number,
+  "slat": number,
+  "sadr": string,
+
+  "elon": number,
+  "elat": number,
+  "eadr": string,
+
+  "user_id": string
 }
 
 interface RideWsConstrucProps {
@@ -16,17 +28,19 @@ interface RideWsConstrucProps {
   onMessage?: SocketListener["onMessage"]
   onError?: SocketListener["onError"]
   onClose?: SocketListener["onClose"],
-  onDriverFound?: (info:DriverInfo) => void,
+  onDriverFound?: (info: DriverInfo) => void,
 
 }
 
 class RideWs {
   private ws: WebSocket | undefined
   readonly StatusMsg = {
-    DriverFound: "⚼",
-    NoDriver: "⚼⚼⚼⚼",
-    DriverCancel: "⚼⚼⚼",
-    ClientCancel: "⚼⚼",
+    DriverFound: "DRF߷",
+    NoDriver: "NDR߷",
+    DriverCancel: "DCX߷",
+    ClientCancel: "CCX߷",
+    TripId: "TID߷",
+    Message: "MSG߷",
   }
   public client_listeners: RideWsConstrucProps
 
@@ -39,14 +53,17 @@ class RideWs {
     this._onWsMessage = this._onWsMessage.bind(this);
   }
 
-  public Connect() {
+  public Connect(info: RindeRequestInfo) {
     if (this.ws) {
       console.log("Already socket ");
       return
     }
 
+    const queries = Object.entries(info).map(([k, v]) => `${k}=${v}`).join("&");
+
     console.log("Creating websocket")
-    this.ws = new WebSocket(`ws://10.0.2.2:3080/ws/client/w3gv7?user_id=abc&lon=106.69380051915194&lat=10.78825445546148`,"ws");
+    this.ws = new WebSocket(`ws://10.0.2.2:3080/ws/client/w3gv7?${queries}`, "ws");
+    //this.ws = new WebSocket(url,"ws");
     this.ws.onopen = this._onWsOpen;
     this.ws.onmessage = this._onWsMessage;
     this.ws.onerror = this._onWsError;
@@ -65,22 +82,30 @@ class RideWs {
     }
     const msg = e.data as string
     console.log("Web socket message: ", e.data);
-
-    switch (msg) {
+    const cmd = msg.length <= 4 ? msg : msg.substring(0, 4)
+    switch (cmd) {
       case this.StatusMsg.NoDriver:
         this.Close();
-        break
-      case this.StatusMsg.ClientCancel:
-        this.Close();
-        break
-      case this.StatusMsg.DriverCancel:
-        this.Close();
+        break;
+      // case this.StatusMsg.ClientCancel:
+      //   this.Close();
+      //   break
+      // case this.StatusMsg.DriverCancel:
+      //   this.Close();
+      //   break
+      case this.StatusMsg.Message:
+        console.log("Driver msg: ", e.data);
+        break;
+      case this.StatusMsg.DriverFound:
+        try {
+          const driver = JSON.parse(msg.substring(4))
+          this.client_listeners?.onDriverFound?.(driver);
+        } catch (e) {
+          console.log(e)
+        }
         break
       default:
-        if(msg[0] === "⚼"){
-          this.client_listeners.onDriverFound?.(JSON.parse(msg.substring(1)))
-        }
-        this.client_listeners.onMessage?.(e)
+        console.log("Unknow ws cmd:",cmd,msg)
     }
 
   }

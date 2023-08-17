@@ -12,6 +12,8 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -66,7 +68,11 @@ public class MySSE extends ReactContextBaseJavaModule {
     }
   }
 
-  private OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
+  private OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder()
+          .connectTimeout(15, TimeUnit.MINUTES)
+          .callTimeout(15, TimeUnit.MINUTES)
+          .readTimeout(15, TimeUnit.MINUTES)
+          .writeTimeout(15, TimeUnit.MINUTES);
   @Nullable private String lastEvId;
   @Nullable private EventSource ev;
   private final ReactApplicationContext context;
@@ -87,9 +93,11 @@ public class MySSE extends ReactContextBaseJavaModule {
             .get()
             .url(url)
             .cacheControl(CacheControl.FORCE_NETWORK);
+
     if(lastEvId != null){
       reqBuilder.header("Last-Event-ID", lastEvId);
     }
+
     ev = EventSources
             .createFactory(httpClientBuilder.build())
             .newEventSource(reqBuilder.build(),new MyEvSrcListener());

@@ -20,7 +20,7 @@ function WaitingDriver() {
 
 function FindingDriver() {
   return (<View style={[styles.statusTxtWrapper, { paddingVertical: 15 }]}>
-    <Text style={[styles.mainTxt, { maxWidth: "100%", fontSize: 24,textAlign:"center" }]} >
+    <Text style={[styles.mainTxt, { maxWidth: "100%", fontSize: 24, textAlign: "center" }]} >
       Finding a driver...
     </Text>
   </View>)
@@ -54,20 +54,31 @@ function DriverInfo() {
   </View>)
 }
 
-function RideInfo(): JSX.Element {
+interface RideInfoProps {
+  onDriverUpdate: (lon: number, lat: number) => void
+}
+
+function RideInfo(props: RideInfoProps): JSX.Element {
   const appState = useAppSelector(selectAppState);
   const dispatch = useAppDispatch();
-  useEffect(()=>{
-    console.log("Connecting to websocket")
-    GlobalServices.RideWs.Connect();
 
-    GlobalServices.RideWs.client_listeners.onDriverFound = (i)=>{
-      dispatch(updateAppState({state:"Waiting"}));
-      Alert.alert("Driver found",` We found a driver for you \n Driver id: ${i.driver_id}`,[
+  function CallUpdateDriver(loc:any) {
+    props.onDriverUpdate(loc.lon, loc.lat);
+  }
+
+  useEffect(() => {
+    console.log("Connecting to websocket");
+    //GlobalServices.RideWs.Connect();
+    GlobalServices.DriverLoc.listeners.onDriverLoc = CallUpdateDriver
+    GlobalServices.RideWs.client_listeners.onDriverFound = (i) => {
+      Alert.alert("Driver found", ` We found a driver for you \n Driver id: ${i.driver_id}`, [
         {
-          text:"Ok"
+          text: "Ok"
         }
       ]);
+      GlobalServices.DriverLoc.Connect(i.driver_id);
+      dispatch(updateAppState({ state: "Waiting" }));
+
     }
 
   })

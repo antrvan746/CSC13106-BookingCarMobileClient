@@ -12,21 +12,35 @@ interface MySSENative {
     type: string | null,
     data: string
   },
-  OpenEvent:{
-    code:string
+  OpenEvent: {
+    code: string
   },
-  FailEvent:{
-    message:string
-  }|undefined,
-  CloseEvent:{},
+  FailEvent: {
+    message: string
+  } | undefined,
+  CloseEvent: {},
 
-  getConstants:()=>MySSEConst
+  getConstants: () => MySSEConst
+}
+
+
+interface LocationObject {
+  lon: number,
+  lat: number,
+  driver_id: string
+}
+
+interface listerners{
+  onDriverLoc?: (loc:LocationObject)=>void
 }
 
 class DriverLocSSE {
   private MySSE = ReactNative.NativeModules.MySSE as MySSENative;
   private eventEmitter = new NativeEventEmitter(ReactNative.NativeModules.MySSE);
   private SSEConst = this.MySSE.getConstants();
+  public listeners: listerners = {};
+
+  isRunning = false;
 
   constructor() {
     if (!this.MySSE) {
@@ -34,9 +48,18 @@ class DriverLocSSE {
     }
 
     this.eventEmitter.addListener(this.SSEConst.MSG_EVENT, (e: MySSENative["MessageEvent"]) => {
-      console.log("SSE message: ", e.data);
+      const data = e.data;
+      console.log("SSE message: ", data);
+      try {
+        const obj = JSON.parse(e.data) as LocationObject;
+        console.log("My SSE Client listeners: ",this.listeners);
+        this.listeners?.onDriverLoc?.(obj);
+      } catch (e) {
+        console.log(e);
+      }
     });
     this.eventEmitter.addListener(this.SSEConst.OPEN_EVENT, (e: MySSENative["OpenEvent"]) => {
+      this.isRunning = true;
       console.log("SSE Open: ", e.code);
     });
     this.eventEmitter.addListener(this.SSEConst.FAIL_EVENT, (e: MySSENative["FailEvent"]) => {
@@ -46,10 +69,12 @@ class DriverLocSSE {
       console.log("SSE closed: ");
     });
 
-    this.Connect();
+    //this.Connect();
   }
-  public Connect() {
-    this.MySSE.ConnectSSE("http://10.0.2.2:3080/sse/driver_loc");
+  public Connect(driver_id:string) {
+    if(this.isRunning == false){
+      this.MySSE.ConnectSSE(`http://10.0.2.2:3080/sse/driver_loc/${driver_id}`);
+    }
   }
 }
 
