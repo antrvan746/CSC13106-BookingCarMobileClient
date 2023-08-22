@@ -174,7 +174,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
 
   function OnDriverChangeLoc(lon: number, lat: number) {
     setDriverCoord({ lon, lat });
-    console.log("Get driver location",lon,lat);
+    console.log("Get driver location", lon, lat);
   }
 
   return (<View style={styles.containerWrapper}>

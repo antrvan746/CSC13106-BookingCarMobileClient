@@ -29,16 +29,20 @@ interface RideWsConstrucProps {
   onError?: SocketListener["onError"]
   onClose?: SocketListener["onClose"],
   onDriverFound?: (info: DriverInfo) => void,
+  onDriverAtPick?: () => void,
+  onDriverAtDrop?: () => void
 
 }
 
 class RideWs {
   private ws: WebSocket | undefined
-  readonly StatusMsg = {
+  static readonly StatusMsg = {
     DriverFound: "DRF߷",
     NoDriver: "NDR߷",
     DriverCancel: "DCX߷",
     ClientCancel: "CCX߷",
+    DriverArrivePick: "DAP߷",
+    DriverArriveDrop: "DAD߷",
     TripId: "TID߷",
     Message: "MSG߷",
   }
@@ -76,6 +80,8 @@ class RideWs {
     this.client_listeners?.onOpen?.()
   }
 
+
+
   private _onWsMessage(e: WebSocketMessageEvent) {
     if (!e.data || typeof e.data !== "string") {
       return
@@ -84,19 +90,21 @@ class RideWs {
     console.log("Web socket message: ", e.data);
     const cmd = msg.length <= 4 ? msg : msg.substring(0, 4)
     switch (cmd) {
-      case this.StatusMsg.NoDriver:
+      case RideWs.StatusMsg.NoDriver:
         this.Close();
         break;
-      // case this.StatusMsg.ClientCancel:
-      //   this.Close();
-      //   break
-      // case this.StatusMsg.DriverCancel:
-      //   this.Close();
-      //   break
-      case this.StatusMsg.Message:
+      case RideWs.StatusMsg.Message:
         console.log("Driver msg: ", e.data);
         break;
-      case this.StatusMsg.DriverFound:
+      case RideWs.StatusMsg.DriverArrivePick:
+        console.log("Driver arrive at pickup");
+        this.client_listeners?.onDriverAtPick?.();
+        break;
+      case RideWs.StatusMsg.DriverArriveDrop:
+        console.log("Driver has drop you off");
+        this.client_listeners?.onDriverAtDrop?.();
+        break;
+      case RideWs.StatusMsg.DriverFound:
         try {
           const driver = JSON.parse(msg.substring(4))
           this.client_listeners?.onDriverFound?.(driver);
@@ -105,7 +113,7 @@ class RideWs {
         }
         break
       default:
-        console.log("Unknow ws cmd:",cmd,msg)
+        console.log("Unknow ws cmd:", cmd, msg)
     }
 
   }
@@ -117,7 +125,8 @@ class RideWs {
 
   private _onWsClose(e: WebSocketCloseEvent) {
     console.log(`Web socket closed. Code: ${e.code}. Reason: ${e.reason}`);
-    this.client_listeners.onClose?.(e)
+    this._onWsMessage({ data: e.reason });
+    this.client_listeners.onClose?.(e);
     this.Close();
   }
 

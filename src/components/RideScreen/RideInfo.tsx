@@ -69,16 +69,25 @@ function RideInfo(props: RideInfoProps): JSX.Element {
   useEffect(() => {
     console.log("Connecting to websocket");
     //GlobalServices.RideWs.Connect();
-    GlobalServices.DriverLoc.listeners.onDriverLoc = CallUpdateDriver
+    GlobalServices.DriverLoc.listeners.onDriverLoc = CallUpdateDriver;
+    
+    GlobalServices.RideWs.client_listeners.onDriverAtPick = ()=>{
+      dispatch(updateAppState({state:"Going"}));
+      Alert.alert("Driver arrived","Tài xế đã đến nơi đón, bạn hãy nhìn xung quanh xem !")
+    }
+
+    GlobalServices.RideWs.client_listeners.onDriverAtDrop = ()=>{
+      Alert.alert("You has arrived","Bạn đã tới đích của bạn. ");
+    }
+
     GlobalServices.RideWs.client_listeners.onDriverFound = (i) => {
-      Alert.alert("Driver found", ` We found a driver for you \n Driver id: ${i.driver_id}`, [
+      Alert.alert("Driver found", ` Đã có tài xế nhận yêu cầu của bạn \n Driver id: ${i.driver_id}`, [
         {
           text: "Ok"
         }
       ]);
       GlobalServices.DriverLoc.Connect(i.driver_id);
       dispatch(updateAppState({ state: "Waiting" }));
-
     }
 
   })
