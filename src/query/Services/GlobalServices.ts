@@ -3,7 +3,7 @@ import DriverWaitXHR from "./DriverWaitXHR";
 import RideWs from "./RideWs";
 
 export default  {
-  DriverPoll: new DriverWaitXHR({}),
+  // DriverPoll: new DriverWaitXHR({}),
   RideWs: new RideWs({}),
   DriverLoc: new DriverLocSSE()
 } as const

@@ -31,7 +31,7 @@ interface RideWsConstrucProps {
   onDriverFound?: (info: DriverInfo) => void,
   onDriverAtPick?: () => void,
   onDriverAtDrop?: () => void
-
+  onTripStart?:()=>void,
 }
 
 class RideWs {
@@ -45,6 +45,7 @@ class RideWs {
     DriverArriveDrop: "DAD߷",
     TripId: "TID߷",
     Message: "MSG߷",
+    DriverStratTrip:"DST߷",
   }
   public client_listeners: RideWsConstrucProps
 
@@ -103,6 +104,9 @@ class RideWs {
       case RideWs.StatusMsg.DriverArriveDrop:
         console.log("Driver has drop you off");
         this.client_listeners?.onDriverAtDrop?.();
+        break;
+      case RideWs.StatusMsg.DriverStratTrip:
+        this.client_listeners?.onTripStart?.();
         break;
       case RideWs.StatusMsg.DriverFound:
         try {

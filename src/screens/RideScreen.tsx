@@ -109,9 +109,9 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
 
       rideReqInfo.current = {
         slat: pick[0], slon: pick[1],
-        sadr: rideLocState.pickUp?.address || rideLocState.pickUp?.id || "",
+        sadr: rideLocState.pickUp?.name || rideLocState.pickUp?.address || rideLocState.pickUp?.id || "",
         elat: drop[0], elon: drop[1],
-        eadr: rideLocState.dropOff?.address || rideLocState.dropOff?.id || "",
+        eadr: rideLocState.dropOff?.name || rideLocState.dropOff?.address || rideLocState.dropOff?.id || "",
         user_id: "test_user"
       }
 
@@ -190,6 +190,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
               latitudeDelta: 0.008,
               longitudeDelta: 0.008,
             }}
+            showsUserLocation={true}
             style={StyleSheet.absoluteFillObject} >
             <Marker key={1} description="Pick up"
               coordinate={{ latitude: coordinate.pick[0], longitude: coordinate.pick[1], }} />
@@ -216,7 +217,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
         appState.state == "Book" ?
           <BookVehicle BookBtnPressCallBack={BookBtnClickHandler} />
           :
-          <RideInfo onDriverUpdate={OnDriverChangeLoc} />
+          <RideInfo onDriverUpdate={OnDriverChangeLoc} req={rideReqInfo.current} />
       }
     </View>
   </View>)

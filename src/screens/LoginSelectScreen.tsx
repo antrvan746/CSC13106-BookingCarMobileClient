@@ -19,18 +19,6 @@ const NavStack = createNativeStackNavigator<LoginStackParam>();
 
 function GoogleLoginButton() {
 
-
-  const onAuthStateChange: FBAuth.AuthListenerCallback = async function (userData) {
-    //console.log(userData);
-
-
-  }
-
-  useEffect(() => {
-    const subscriber = auth().onAuthStateChanged(onAuthStateChange);
-    return subscriber; // unsubscribe on unmount
-  }, []);
-
   async function GoogleLoginPress() {
     try {
       await GoogleSignin.configure({
@@ -100,16 +88,21 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
   const [userDetailApiTrigger] = useLazyGetUserDetailQuery();
   const [userDetailAddTrigger] = useAddUserDetailMutation();
 
-  const onAuthStateChanged: FBAuth.AuthListenerCallback = async function (user) {
-    const CreateUserDetail = async function (phone: string, name: string, email?: string,) {
+  const CreateUserDetail = async function (phone: string, name: string, email?: string,) {
       
-      try {
-        return await userDetailAddTrigger({ email, phone, name }).unwrap();
-      } catch (e) {
-        console.log(e);
-      }
+    try {
+      return await userDetailAddTrigger({ email, phone, name }).unwrap();
+    } catch (e) {
+      console.log(e);
+    }
 
-      return null;
+    return null;
+  }
+
+  const onAuthStateChanged: FBAuth.AuthListenerCallback = async function (user) {
+    if (!user) {
+      dispatch(setLoginState({ user: null }));
+      return;
     }
 
 
@@ -118,12 +111,6 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
       return;
     }
 
-    console.log(user ? `Login successfully ${user.phoneNumber}` : "Log out success fully");
-
-    if (!user) {
-      dispatch(setLoginState({ user: null }));
-      return;
-    }
 
     console.log("Login success");
     const { email, phoneNumber, photoURL, providerId, uid, displayName } = user;
@@ -140,6 +127,8 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
     console.log("User detail ",userInfo);
     console.log("Login with locationIQ key", locationIQKey);
 
+    
+
     dispatch(setLoginState({
       user: {
         email, phoneNumber, photoURL, providerId, uid, displayName,
@@ -148,10 +137,18 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
       }
     }));
 
+    
   }
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    const user = auth().currentUser;
+    console.log(user);
+    if(user?.phoneNumber){
+      CreateUserDetail(user.phoneNumber,user.displayName || user.phoneNumber,user.email || undefined)
+      .then(v => console.log(v));
+    }
+
     return () => {
       console.log("Unsub login listener");
       subscriber();

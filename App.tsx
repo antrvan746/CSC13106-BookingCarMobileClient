@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { PropsWithChildren } from 'react';
 import { Pressable, SafeAreaView, StyleSheet, View, } from 'react-native';
 
@@ -29,15 +29,37 @@ import { updateDebugMenu } from './src/redux/DebugMenu';
 import { enableLatestRenderer } from 'react-native-maps';
 import { selectLoginState } from './src/redux/LoginState';
 import LoginScreen from './src/screens/LoginSelectScreen';
-import RideStatusBar from './src/components/RideStatusBar';
-import RideWs from './src/query/Services/RideWs';
-
+import { PermissionsAndroid } from 'react-native';
 interface WrapperProps extends StackScreenProps {
   screen: JSX.Element
 }
 
 const NavStack = createNativeStackNavigator<RootStackParamList>();
 
+async function requestLocationPermission():Promise<boolean> 
+{
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title:"Request location",
+        message:"We need your location",
+        buttonPositive:"Agree",
+        buttonNegative:"Disagree"
+      }
+    )
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log("You can use the location")
+      return true;
+    } else {
+      console.log("location permission denied")
+      return false;
+    }
+  } catch (err) {
+    console.warn(err)
+  }
+  return false;
+}
 
 function MyScreenWrapper({ screen, route, navigation }: WrapperProps) {
   const loginState = useAppSelector(selectLoginState);
@@ -47,6 +69,10 @@ function MyScreenWrapper({ screen, route, navigation }: WrapperProps) {
   const onDebugMenuPress = () => {
     dispath(updateDebugMenu({ isOpen: true }));
   }
+
+  useEffect(()=>{
+    requestLocationPermission();
+  },[])
 
   return (<SafeAreaView style={styles.sampleContainer}>
     <DebugModal route={route} navigation={navigation} />

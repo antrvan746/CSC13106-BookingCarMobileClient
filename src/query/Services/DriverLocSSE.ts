@@ -7,6 +7,8 @@ interface MySSEConst {
 }
 interface MySSENative {
   ConnectSSE: (url: string) => boolean,
+  Disconnect:()=>boolean,
+
   MessageEvent: {
     id: string | null,
     type: string | null,
@@ -67,6 +69,7 @@ class DriverLocSSE {
     });
     this.eventEmitter.addListener(this.SSEConst.CLOSE_EVENT, (e: MySSENative["CloseEvent"]) => {
       console.log("SSE closed: ");
+      this.isRunning = false;
     });
 
     //this.Connect();
@@ -74,6 +77,12 @@ class DriverLocSSE {
   public Connect(driver_id:string) {
     if(this.isRunning == false){
       this.MySSE.ConnectSSE(`http://10.0.2.2:3080/sse/driver_loc/${driver_id}`);
+      this.isRunning = true;
+    }
+  }
+  public Disconnect(){
+    if(this.isRunning == true){
+      this.MySSE.Disconnect();
     }
   }
 }

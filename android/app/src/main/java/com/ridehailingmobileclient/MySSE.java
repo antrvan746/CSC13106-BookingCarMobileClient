@@ -36,6 +36,8 @@ public class MySSE extends ReactContextBaseJavaModule {
     public void onClosed(@NonNull EventSource eventSource) {
       super.onClosed(eventSource);
       MySSE.this.sendEvent(CLOSED_EV,null);
+      MySSE.this.ev = null;
+      MySSE.this.okHttpClient = null;
     }
 
     @Override
@@ -75,6 +77,7 @@ public class MySSE extends ReactContextBaseJavaModule {
           .writeTimeout(15, TimeUnit.MINUTES);
   @Nullable private String lastEvId;
   @Nullable private EventSource ev;
+  @Nullable private  OkHttpClient okHttpClient;
   private final ReactApplicationContext context;
 
   private void sendEvent(String eventName, @Nullable WritableMap params) {
@@ -89,6 +92,10 @@ public class MySSE extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public boolean ConnectSSE(String url){
+    if(this.ev == null || this.httpClientBuilder == null){
+      return false;
+    }
+
     Request.Builder reqBuilder = new Request.Builder()
             .get()
             .url(url)
@@ -97,11 +104,22 @@ public class MySSE extends ReactContextBaseJavaModule {
     if(lastEvId != null){
       reqBuilder.header("Last-Event-ID", lastEvId);
     }
-
+    okHttpClient = httpClientBuilder.build();
     ev = EventSources
-            .createFactory(httpClientBuilder.build())
+            .createFactory(okHttpClient)
             .newEventSource(reqBuilder.build(),new MyEvSrcListener());
 
+    return true;
+  }
+
+  @ReactMethod
+  public boolean Disconnect(){
+    if(this.ev != null){
+      this.ev.cancel();
+    }
+    if(this.okHttpClient != null){
+      this.okHttpClient.dispatcher().cancelAll();
+    }
     return true;
   }
 

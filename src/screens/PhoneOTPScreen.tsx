@@ -17,6 +17,15 @@ function PhoneLoginOTP({ navigation, route }: LoginStackSreenProps) {
     textInputRef.current?.focus();
   }
 
+  useEffect(()=>{
+    const subscriber = auth().onAuthStateChanged((user)=>{
+      if(user != null){
+        navigation.replace("Select");
+      }
+    });
+    return subscriber;
+  },[])
+
   async function signInWithPhoneNumber() {
     if (route.params?.phone) {
       console.log("Login",route.params.phone)

@@ -1,19 +1,31 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { Alert, Modal, StyleSheet, Text, View } from "react-native"
 import Icon from "react-native-vector-icons/MaterialIcons"
 import { GlobalStyles } from "../../styles/colors"
 import { useAppDispatch, useAppSelector } from "../../redux/hooks"
 import { selectAppState, updateAppState } from "../../redux/AppState"
 import GlobalServices from "../../query/Services/GlobalServices"
+import { RindeRequestInfo } from "../../query/Services/RideWs"
+
+interface DriverInfo {
+  phone: string;
+  name: string;
+  vehicle: {
+    plate_number: string;
+    model: string;
+    color: string | null;
+    type: string | null;
+  }
+}
 
 
-function WaitingDriver() {
+function WaitingDriver(req:RindeRequestInfo) {
   return (
     <View style={styles.statusTxtWrapper}>
       <Text style={styles.mainTxt}>Tài xế bạn đang tới</Text>
       <Text style={[styles.mainTxt, { textAlign: "right" }]}>15 phút</Text>
       <Text style={styles.descTxt}>
-        123 Hai Bà Trưng, P.Vo Thi Sau, Q.3,Tp HCM
+        {req.sadr}
       </Text>
     </View>);
 }
@@ -26,15 +38,17 @@ function FindingDriver() {
   </View>)
 }
 
-function GoingWithDriver() {
+function GoingWithDriver(req:RindeRequestInfo) {
   return (<View style={styles.statusTxtWrapper}>
     <Text style={[styles.mainTxt, { maxWidth: "100%" }]} >Currently traveling</Text>
+    <Text style={styles.descTxt}>
+        {req.eadr}
+      </Text>
   </View>)
 }
 
 
-
-function DriverInfo() {
+function DriverInfo(driver:DriverInfo) {
 
   return (<View style={styles.infoWrapper}>
     <View style={styles.driverInfoWrapper}>
@@ -43,49 +57,81 @@ function DriverInfo() {
           color={GlobalStyles.mainWhite.color} />
       </View>
       <Text style={{ marginLeft: 10 }}>
-        Nguyen Xuan Hoang Lam
+        {driver.name}
       </Text>
     </View>
 
     <View style={styles.vehicleInfoWrapper}>
-      <Text style={{ textAlign: "center" }}>ACB-7746-789</Text>
-      <Text>Honda wave</Text>
+      <Text style={{ textAlign: "center" }}>{driver.vehicle.plate_number}</Text>
+      <Text>{driver.vehicle.model}</Text>
     </View>
   </View>)
 }
 
 interface RideInfoProps {
   onDriverUpdate: (lon: number, lat: number) => void
+  req:RindeRequestInfo,
 }
 
 function RideInfo(props: RideInfoProps): JSX.Element {
   const appState = useAppSelector(selectAppState);
   const dispatch = useAppDispatch();
 
-  function CallUpdateDriver(loc:any) {
+  const [driverInfo, setDriverInfo] = useState<DriverInfo | null>(null);
+
+  function CallUpdateDriver(loc: any) {
     props.onDriverUpdate(loc.lon, loc.lat);
+  }
+
+  const GetDriverInfo = async function (driver_id: string) {
+    try {
+      const req = await fetch(`http://10.0.2.2:3000/api/drivers/find_info?driver_id=${driver_id}`);
+      if (req.status !== 200) {
+        return null;
+      }
+      return (await req.json()) as DriverInfo;
+    } catch (error) {
+      console.warn(error);
+      return null;
+    }
   }
 
   useEffect(() => {
     console.log("Connecting to websocket");
     //GlobalServices.RideWs.Connect();
     GlobalServices.DriverLoc.listeners.onDriverLoc = CallUpdateDriver;
-    
-    GlobalServices.RideWs.client_listeners.onDriverAtPick = ()=>{
-      dispatch(updateAppState({state:"Going"}));
-      Alert.alert("Driver arrived","Tài xế đã đến nơi đón, bạn hãy nhìn xung quanh xem !")
+
+    GlobalServices.RideWs.client_listeners.onDriverAtPick = () => {
+      Alert.alert("Driver arrived", "Tài xế đã đến nơi đón, bạn hãy nhìn xung quanh xem !")
     }
 
-    GlobalServices.RideWs.client_listeners.onDriverAtDrop = ()=>{
-      Alert.alert("You has arrived","Bạn đã tới đích của bạn. ");
+    GlobalServices.RideWs.client_listeners.onTripStart = () => {
+      dispatch(updateAppState({ state: "Going" }));
+      GlobalServices.DriverLoc.Disconnect();
+    }
+
+    GlobalServices.RideWs.client_listeners.onDriverAtDrop = () => {
+      Alert.alert("You has arrived", "Bạn đã tới đích của bạn. ");
+      GlobalServices.RideWs.Close();
     }
 
     GlobalServices.RideWs.client_listeners.onDriverFound = (i) => {
-      Alert.alert("Driver found", ` Đã có tài xế nhận yêu cầu của bạn \n Driver id: ${i.driver_id}`, [
-        {
-          text: "Ok"
+      GetDriverInfo(i.driver_id).then(v => {
+        setDriverInfo(v);
+        if (v == null) {
+          return;
         }
-      ]);
+        const msg = `
+        Driver name: ${v.name}
+        Vehicle: ${v.vehicle.model}
+        Plate: ${v.vehicle.plate_number}`;
+        Alert.alert("Driver found", msg,
+          [
+            {text: "Ok"}
+          ]
+        );
+      });
+
       GlobalServices.DriverLoc.Connect(i.driver_id);
       dispatch(updateAppState({ state: "Waiting" }));
     }
@@ -94,10 +140,10 @@ function RideInfo(props: RideInfoProps): JSX.Element {
   return (<View>
 
     {appState.state == "Finding" ? <FindingDriver /> : null}
-    {appState.state == "Waiting" ? <WaitingDriver /> : null}
-    {appState.state == "Going" ? <GoingWithDriver /> : null}
+    {appState.state == "Waiting" ? <WaitingDriver {...props.req} /> : null}
+    {appState.state == "Going" ? <GoingWithDriver {...props.req} /> : null}
 
-    {appState.state != "Finding" ? <DriverInfo /> : null}
+    {appState.state != "Finding" && driverInfo  ? <DriverInfo {...driverInfo} /> : null}
 
   </View>)
 }
