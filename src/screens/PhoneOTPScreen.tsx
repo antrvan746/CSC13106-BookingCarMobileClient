@@ -1,12 +1,12 @@
 import React, { useState, useRef, createRef, useEffect } from 'react';
-import { LoginStackSreenProps } from '../types/LoginScreens';
+import { LoginStackParam } from '../types/LoginScreens';
 import { Pressable, StyleSheet, Text, TextInput, TouchableHighlight, View } from 'react-native';
 import auth, { FirebaseAuthTypes as FBAuth } from '@react-native-firebase/auth';
 import database  from "@react-native-firebase/database"
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 
-
-function PhoneLoginOTP({ navigation, route }: LoginStackSreenProps) {
+function PhoneLoginOTP({ navigation, route }:NativeStackScreenProps<LoginStackParam, "PhoneVerify">) {
   const [otp, setOtp] = useState<string>("");
   const textInputRef = createRef<TextInput>();
 

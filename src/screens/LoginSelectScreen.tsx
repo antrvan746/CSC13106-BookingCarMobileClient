@@ -12,7 +12,8 @@ import { selectLoginState, setLoginState } from '../redux/LoginState';
 import auth, { FirebaseAuthTypes as FBAuth } from '@react-native-firebase/auth';
 import database from "@react-native-firebase/database"
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useAddUserDetailMutation, useLazyGetUserDetailQuery } from '../query/UserData';
+import { UserDetailInfo, useAddUserDetailMutation, useLazyGetUserDetailQuery } from '../query/UserData';
+import UserDetailScreen from './UserDetailScreen';
 
 const NavStack = createNativeStackNavigator<LoginStackParam>();
 
@@ -81,74 +82,87 @@ function LoginSelectScreen({ navigation, route }: LoginStackSreenProps) {
   </View>)
 }
 
+
+
+
 function LoginScreen({ navigation, route }: StackScreenProps) {
   const dispatch = useAppDispatch();
   const loginState = useAppSelector(selectLoginState);
 
   const [userDetailApiTrigger] = useLazyGetUserDetailQuery();
-  const [userDetailAddTrigger] = useAddUserDetailMutation();
 
-  const CreateUserDetail = async function (phone: string, name: string, email?: string,) {
-      
-    try {
-      return await userDetailAddTrigger({ email, phone, name }).unwrap();
-    } catch (e) {
-      console.log(e);
+
+  const checkIsAlreadyUser = async function (phone:string) {
+    if(!phone){
+      return null;
     }
-
+    try{
+      const res = await userDetailApiTrigger({phone}).unwrap()
+      if(!res){return null;}
+      return res.length < 0 || res[0].phone != phone ? null : res[0];
+    }catch(e){
+      console.log("checkIsAlreadyUser",e);
+    }
     return null;
+
   }
 
   const onAuthStateChanged: FBAuth.AuthListenerCallback = async function (user) {
-    if (!user) {
+    if (!user || !user.phoneNumber) {
       dispatch(setLoginState({ user: null }));
       return;
     }
 
-
-    if (loginState.user && auth().currentUser) {
+    if (loginState.user && auth().currentUser && loginState.user.locationIQKey) {
       console.log("User has already logged in with API key", loginState.user.locationIQKey);
+      navigation.navigate("Main");
       return;
     }
 
-
     console.log("Login success");
-    const { email, phoneNumber, photoURL, providerId, uid, displayName } = user;
+     const { email, phoneNumber, photoURL, providerId, uid, displayName } = user;
 
-    const userDetailQuery = CreateUserDetail(
-      phoneNumber || "0",
-      displayName || "Not named user",
-      email || undefined
-    );
+    const userDetailQuery = checkIsAlreadyUser(user.phoneNumber);
+    
     const locationIQQuery = database().ref("/LocationIQ_KEY").once("value");
     const [snap, userInfo] = await Promise.all([locationIQQuery, userDetailQuery]);
 
     const locationIQKey = snap.val();
     console.log("User detail ",userInfo);
     console.log("Login with locationIQ key", locationIQKey);
-
     
 
     dispatch(setLoginState({
       user: {
-        email, phoneNumber, photoURL, providerId, uid, displayName,
         locationIQKey,
         detail: userInfo || undefined
       }
     }));
 
-    
+    if(!userInfo){
+      console.log("Naviagting");
+      navigation.navigate("Detail",{user:{
+        phone: phoneNumber || "",
+        name: displayName,
+        email: email
+      }});
+    }else{
+      navigation.navigate("Main");
+    }
+  }
+
+  function onSuccess(info:UserDetailInfo){
+    dispatch(setLoginState({
+      user: {
+        ...loginState.user,
+        detail: info
+      }
+    }));
+    navigation.navigate("Main");
   }
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    const user = auth().currentUser;
-    console.log(user);
-    if(user?.phoneNumber){
-      CreateUserDetail(user.phoneNumber,user.displayName || user.phoneNumber,user.email || undefined)
-      .then(v => console.log(v));
-    }
-
     return () => {
       console.log("Unsub login listener");
       subscriber();
@@ -173,6 +187,11 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
       <NavStack.Screen name="PhoneVerify">
         {
           (props) => <PhoneLoginOTP {...props} />
+        }
+      </NavStack.Screen>
+      <NavStack.Screen name="Detail">
+        {
+          (props) => <UserDetailScreen {...props} onSuccess={onSuccess} />
         }
       </NavStack.Screen>
     </NavStack.Navigator>)

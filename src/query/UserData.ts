@@ -9,8 +9,7 @@ export type UserDetailInfo = {
 }
 
 export type GetUsersDetailQueries = {
-  email?:string,
-  phone?:string
+  phone:string
 }
 
 export type PostUserDetailBody = {
@@ -26,10 +25,10 @@ const UserDetailApi = createApi({
   }),
   endpoints: (builder) =>({
     getUserDetail: builder.query<UserDetailInfo[],GetUsersDetailQueries>({
-      query:({email,phone}) => ({
+      query:({phone}) => ({
         url:"",
         method:"GET",
-        params:{email,phone}
+        params:{phone,limit:1}
       })
     }),
     addUserDetail: builder.mutation<UserDetailInfo,PostUserDetailBody>({

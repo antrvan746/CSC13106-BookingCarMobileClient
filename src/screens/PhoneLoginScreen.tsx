@@ -22,7 +22,7 @@ function PhoneLogin({ navigation, route }: LoginStackSreenProps) {
     formatedPhone.current = phone;
 
     //Exception testing number
-    if(phone === "+11234567890"){
+    if(phone.length === "+11234567890".length){
       setValidNumber(true);
     }
   }

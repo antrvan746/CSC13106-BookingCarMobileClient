@@ -13,6 +13,7 @@ import { LocationIQ_Directions, useLazyGetRouteQuery } from "../query/LocationIQ
 import polyline from "@mapbox/polyline"
 import GlobalServices from "../query/Services/GlobalServices";
 import { RindeRequestInfo } from "../query/Services/RideWs";
+import { selectLoginState } from "../redux/LoginState";
 //google map place auto complete -> google map geocode
 
 //Le Van Tam Park
@@ -43,6 +44,8 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     slat: 0, slon: 0, elat: 0, elon: 0,
     user_id: "abc"
   })
+  const loginState = useAppSelector(selectLoginState);
+
   //console.log(JSON.stringify(routing.data?.routes));
 
   const [driverCoord, setDriverCoord] = useState<{ lon?: number, lat?: number }>({})
@@ -112,7 +115,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
         sadr: rideLocState.pickUp?.name || rideLocState.pickUp?.address || rideLocState.pickUp?.id || "",
         elat: drop[0], elon: drop[1],
         eadr: rideLocState.dropOff?.name || rideLocState.dropOff?.address || rideLocState.dropOff?.id || "",
-        user_id: "test_user"
+        user_id: loginState.user?.detail?.id || "test_user"
       }
 
     }

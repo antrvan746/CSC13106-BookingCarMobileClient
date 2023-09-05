@@ -5,12 +5,6 @@ import { UserDetailInfo } from '../query/UserData';
 
 export type LoginState = {
   user: null | {
-    displayName: string | null
-    email: string | null;
-    phoneNumber: string | null;
-    photoURL: string | null;
-    providerId: string;
-    uid: string;
     locationIQKey?:string,
     detail?: UserDetailInfo
   }
