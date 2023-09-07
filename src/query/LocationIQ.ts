@@ -8,7 +8,9 @@ export type LocationIQ_SuggestItem = {
 }
 export type LocationIQ_Directions = {
   "routes":{
-    "geometry":string
+    "geometry":string,
+    "distance": number,
+    "duration": number,
   }[],
   "waypoints": { "location": [number, number] }[]
 }

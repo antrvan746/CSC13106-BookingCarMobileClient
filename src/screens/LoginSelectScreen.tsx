@@ -163,6 +163,10 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    
+    const user = auth().currentUser;
+    onAuthStateChanged(user);
+    
     return () => {
       console.log("Unsub login listener");
       subscriber();

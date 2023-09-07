@@ -19,7 +19,7 @@ interface DriverInfo {
 }
 
 
-function WaitingDriver(req:RindeRequestInfo) {
+function WaitingDriver(req: RindeRequestInfo) {
   return (
     <View style={styles.statusTxtWrapper}>
       <Text style={styles.mainTxt}>Tài xế bạn đang tới</Text>
@@ -38,17 +38,17 @@ function FindingDriver() {
   </View>)
 }
 
-function GoingWithDriver(req:RindeRequestInfo) {
+function GoingWithDriver(req: RindeRequestInfo) {
   return (<View style={styles.statusTxtWrapper}>
     <Text style={[styles.mainTxt, { maxWidth: "100%" }]} >Currently traveling</Text>
     <Text style={styles.descTxt}>
-        {req.eadr}
-      </Text>
+      {req.eadr}
+    </Text>
   </View>)
 }
 
 
-function DriverInfo(driver:DriverInfo) {
+function DriverInfo(driver: DriverInfo) {
 
   return (<View style={styles.infoWrapper}>
     <View style={styles.driverInfoWrapper}>
@@ -69,8 +69,9 @@ function DriverInfo(driver:DriverInfo) {
 }
 
 interface RideInfoProps {
-  onDriverUpdate: (lon: number, lat: number) => void
-  req:RindeRequestInfo,
+  onDriverUpdate: (lon: number, lat: number) => void,
+  onTripDone: ()=>void,
+  req: RindeRequestInfo,
 }
 
 function RideInfo(props: RideInfoProps): JSX.Element {
@@ -85,8 +86,9 @@ function RideInfo(props: RideInfoProps): JSX.Element {
 
   const GetDriverInfo = async function (driver_id: string) {
     try {
-      const req = await fetch(`http://10.0.2.2:3000/api/drivers/find_info?driver_id=${driver_id}`);
+      const req = await fetch(encodeURI(`http://10.0.2.2:3000/api/drivers/find_info?driver_id=${driver_id}`));
       if (req.status !== 200) {
+        console.log(await req.json())
         return null;
       }
       return (await req.json()) as DriverInfo;
@@ -96,10 +98,14 @@ function RideInfo(props: RideInfoProps): JSX.Element {
     }
   }
 
+  console.log(driverInfo);
+
   useEffect(() => {
     console.log("Connecting to websocket");
     //GlobalServices.RideWs.Connect();
-    GlobalServices.DriverLoc.listeners.onDriverLoc = CallUpdateDriver;
+    GlobalServices.DriverLoc.listeners.onDriverLoc = (loc)=>{
+      CallUpdateDriver(loc);
+    };
 
     GlobalServices.RideWs.client_listeners.onDriverAtPick = () => {
       Alert.alert("Driver arrived", "Tài xế đã đến nơi đón, bạn hãy nhìn xung quanh xem !")
@@ -107,18 +113,28 @@ function RideInfo(props: RideInfoProps): JSX.Element {
 
     GlobalServices.RideWs.client_listeners.onTripStart = () => {
       dispatch(updateAppState({ state: "Going" }));
-      GlobalServices.DriverLoc.Disconnect();
     }
 
     GlobalServices.RideWs.client_listeners.onDriverAtDrop = () => {
-      Alert.alert("You has arrived", "Bạn đã tới đích của bạn. ");
       GlobalServices.RideWs.Close();
+      GlobalServices.DriverLoc.Disconnect();
+      Alert.alert("You has arrived", "Bạn đã tới đích của bạn. ",[],{
+        cancelable:true,
+        onDismiss: ()=>{
+          props.onTripDone();
+        }
+      });
+      
     }
 
     GlobalServices.RideWs.client_listeners.onDriverFound = (i) => {
       GetDriverInfo(i.driver_id).then(v => {
+        console.log("Watch driver location: ", i.driver_id)
+        GlobalServices.DriverLoc.Connect(i.driver_id);
+        dispatch(updateAppState({ state: "Waiting" }));        
         setDriverInfo(v);
         if (v == null) {
+          console.warn("Cant find driver info")
           return;
         }
         const msg = `
@@ -127,13 +143,12 @@ function RideInfo(props: RideInfoProps): JSX.Element {
         Plate: ${v.vehicle.plate_number}`;
         Alert.alert("Driver found", msg,
           [
-            {text: "Ok"}
+            { text: "Ok" }
           ]
         );
       });
 
-      GlobalServices.DriverLoc.Connect(i.driver_id);
-      dispatch(updateAppState({ state: "Waiting" }));
+
     }
 
   })
@@ -143,7 +158,7 @@ function RideInfo(props: RideInfoProps): JSX.Element {
     {appState.state == "Waiting" ? <WaitingDriver {...props.req} /> : null}
     {appState.state == "Going" ? <GoingWithDriver {...props.req} /> : null}
 
-    {appState.state != "Finding" && driverInfo  ? <DriverInfo {...driverInfo} /> : null}
+    {appState.state != "Finding" && driverInfo ? <DriverInfo {...driverInfo} /> : null}
 
   </View>)
 }

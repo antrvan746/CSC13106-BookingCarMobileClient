@@ -7,7 +7,7 @@ interface MySSEConst {
 }
 interface MySSENative {
   ConnectSSE: (url: string) => boolean,
-  Disconnect:()=>boolean,
+  Disconnect: () => boolean,
 
   MessageEvent: {
     id: string | null,
@@ -32,29 +32,29 @@ interface LocationObject {
   driver_id: string
 }
 
-interface listerners{
-  onDriverLoc?: (loc:LocationObject)=>void
+interface listerners {
+  onDriverLoc?: (loc: LocationObject) => void
 }
 
 class DriverLocSSE {
-  private MySSE = ReactNative.NativeModules.MySSE as MySSENative;
+  private MySSE;
   private eventEmitter = new NativeEventEmitter(ReactNative.NativeModules.MySSE);
-  private SSEConst = this.MySSE.getConstants();
+  private SSEConst:MySSEConst | undefined;
   public listeners: listerners = {};
 
   isRunning = false;
 
-  constructor() {
-    if (!this.MySSE) {
-      return
-    }
-
+  constructor() {    
+    this.MySSE = ReactNative.NativeModules.MySSE as MySSENative;
+    this.SSEConst = this.MySSE.getConstants();
+    console.log(this.SSEConst);
+    console.log(this.MySSE.ConnectSSE);
     this.eventEmitter.addListener(this.SSEConst.MSG_EVENT, (e: MySSENative["MessageEvent"]) => {
       const data = e.data;
       console.log("SSE message: ", data);
       try {
         const obj = JSON.parse(e.data) as LocationObject;
-        console.log("My SSE Client listeners: ",this.listeners);
+        console.log("My SSE Client listeners: ", this.listeners);
         this.listeners?.onDriverLoc?.(obj);
       } catch (e) {
         console.log(e);
@@ -74,14 +74,14 @@ class DriverLocSSE {
 
     //this.Connect();
   }
-  public Connect(driver_id:string) {
-    if(this.isRunning == false){
-      this.MySSE.ConnectSSE(`http://10.0.2.2:3080/sse/driver_loc/${driver_id}`);
-      this.isRunning = true;
-    }
+  public Connect(driver_id: string) {
+    const success = this.MySSE.ConnectSSE(encodeURI(`http://10.0.2.2:3080/sse/driver_loc/${driver_id}`));
+    console.log("Connecting to see result: ",success);
+
+    this.isRunning = true;
   }
-  public Disconnect(){
-    if(this.isRunning == true){
+  public Disconnect() {
+    if (this.isRunning == true) {
       this.MySSE.Disconnect();
     }
   }

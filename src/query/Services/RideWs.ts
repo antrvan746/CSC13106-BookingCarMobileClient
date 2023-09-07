@@ -20,7 +20,8 @@ export interface RindeRequestInfo {
   "elat": number,
   "eadr": string,
 
-  "user_id": string
+  "user_id": string,
+  "price":number
 }
 
 interface RideWsConstrucProps {
@@ -88,7 +89,7 @@ class RideWs {
       return
     }
     const msg = e.data as string
-    console.log("Web socket message: ", e.data);
+    //console.log("Web socket message: ", e.data);
     const cmd = msg.length <= 4 ? msg : msg.substring(0, 4)
     switch (cmd) {
       case RideWs.StatusMsg.NoDriver:

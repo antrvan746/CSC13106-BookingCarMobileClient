@@ -39,12 +39,13 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
   const [queryTrigger] = useLazyGetGeocodeFromIdQuery();
   const rideLocState = useAppSelector(selectRideLocationState);
   const [routeTrigger, routing] = useLazyGetRouteQuery();
-  const rideReqInfo = useRef<RindeRequestInfo>({
+  const [rideReqInfo, setRideReq] = useState<RindeRequestInfo>({
     sadr: "", eadr: "",
     slat: 0, slon: 0, elat: 0, elon: 0,
-    user_id: "abc"
-  })
+    user_id: "abc", price: 0
+  });
   const loginState = useAppSelector(selectLoginState);
+  const mapViewRef = useRef<MapView | null>(null);
 
   //console.log(JSON.stringify(routing.data?.routes));
 
@@ -102,21 +103,39 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     console.log("Pick", pick);
     if (pick && drop) {
       setCoordinate({ pick, drop });
-      routeTrigger({
+      const { data } = await routeTrigger({
         coord: [
           { lat: pick[0], lon: pick[1] },
           { lat: drop[0], lon: drop[1] }
         ],
         apiKey: "pk.6290201b4314f0a31f29a0867aa0bf85"
       })
+      let ride_price = 0;
+      if (data && data.routes.length > 0) {
+        const distance = data.routes[0].distance / 1000;
+        const time = data.routes[0].duration;
+        console.log("Pricing factor",distance,time);
+        const url = `http://10.0.2.2:3000/api/pricing?distance=${distance}&estimated_time=${time}`;
+        try {
+          const req = await fetch(encodeURI(url));
+          const price = (await req.json()).price;
+          console.log("Trip price",price);
+          if (price) {
+            ride_price = price;
+          }
+        } catch (e) {
+          console.log("Get price error: ", e)
+        }
+      }
 
-      rideReqInfo.current = {
+      setRideReq({
         slat: pick[0], slon: pick[1],
         sadr: rideLocState.pickUp?.name || rideLocState.pickUp?.address || rideLocState.pickUp?.id || "",
         elat: drop[0], elon: drop[1],
         eadr: rideLocState.dropOff?.name || rideLocState.dropOff?.address || rideLocState.dropOff?.id || "",
-        user_id: loginState.user?.detail?.id || "test_user"
-      }
+        user_id: loginState.user?.detail?.id || "test_user",
+        price: ride_price,
+      });
 
     }
   }
@@ -151,14 +170,13 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
 
   }, []);
 
-  const mapViewRef = createRef<MapView>();
 
   const BookBtnClickHandler = () => {
     dispatch(updateAppState({
       state: "Finding",
     }));
     if (coordinate) {
-      GlobalServices.RideWs.Connect(rideReqInfo.current);
+      GlobalServices.RideWs.Connect(rideReqInfo);
     }
 
   }
@@ -177,6 +195,13 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
 
   function OnDriverChangeLoc(lon: number, lat: number) {
     setDriverCoord({ lon, lat });
+    console.log("Map ref",mapViewRef.current);
+    mapViewRef.current?.animateToRegion({
+      latitude:lat,
+      longitude:lon,
+      latitudeDelta: 0.008,
+      longitudeDelta: 0.008,
+    });
     console.log("Get driver location", lon, lat);
   }
 
@@ -185,6 +210,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       {
         !coordinate ? null :
           <MapView
+            
             ref={mapViewRef}
             onLayout={onMapLayout}
             initialRegion={{
@@ -218,9 +244,11 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
     <View style={styles.actionBoxWrapper}>
       {
         appState.state == "Book" ?
-          <BookVehicle BookBtnPressCallBack={BookBtnClickHandler} />
+          <BookVehicle BookBtnPressCallBack={BookBtnClickHandler} price={rideReqInfo.price} />
           :
-          <RideInfo onDriverUpdate={OnDriverChangeLoc} req={rideReqInfo.current} />
+          <RideInfo onDriverUpdate={OnDriverChangeLoc} req={rideReqInfo} onTripDone={()=>{
+            navigation.replace("Main")
+          }} />
       }
     </View>
   </View>)

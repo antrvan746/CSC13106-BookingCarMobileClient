@@ -18,7 +18,7 @@ function MainScreen({ navigation, route }: StackScreenProps): JSX.Element {
     dispatch(updateAppState({
       state: "Search",
     }));
-    navigation.replace("Search");
+    navigation.navigate("Search");
   }
 
   return (<View style={styles.screenWrapper}>
@@ -36,10 +36,6 @@ function MainScreen({ navigation, route }: StackScreenProps): JSX.Element {
         </View>
       </TouchableHighlight>
 
-      <FlatList
-        style={styles.listStyle}
-        data={["1", "2", "3"]}
-        renderItem={({ item }) => <LocationItem description="Local Pool" place_id="" />} />
     </View>
   </View>)
 }

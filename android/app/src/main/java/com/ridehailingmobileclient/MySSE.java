@@ -34,22 +34,27 @@ public class MySSE extends ReactContextBaseJavaModule {
   public class MyEvSrcListener extends EventSourceListener {
     @Override
     public void onClosed(@NonNull EventSource eventSource) {
+      Log.i("MY_SSE", "onEvent: sse closed");
       super.onClosed(eventSource);
       MySSE.this.sendEvent(CLOSED_EV,null);
       MySSE.this.ev = null;
       MySSE.this.okHttpClient = null;
+
     }
 
     @Override
     public void onEvent(@NonNull EventSource eventSource, @Nullable String id, @Nullable String type, @NonNull String data) {
+      Log.i("MY_SSE", "onEvent: sse event");
       super.onEvent(eventSource, id, type, data);
       WritableMap params = Arguments.createMap();
       params.putString("data", data);
       MySSE.this.sendEvent(MSG_EV,params);
+
     }
 
     @Override
     public void onFailure(@NonNull EventSource eventSource, @Nullable Throwable t, @Nullable Response response) {
+      Log.i("MY_SSE", "onFail: sse failed");
       super.onFailure(eventSource, t, response);
       if(t != null){
         WritableMap params = Arguments.createMap();
@@ -63,6 +68,7 @@ public class MySSE extends ReactContextBaseJavaModule {
 
     @Override
     public void onOpen(@NonNull EventSource eventSource, @NonNull Response response) {
+      Log.i("MY_SSE", "onOpen: sse opened");
       super.onOpen(eventSource, response);
       WritableMap params = Arguments.createMap();
       params.putString("code", String.valueOf(response.code()));
@@ -92,10 +98,7 @@ public class MySSE extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public boolean ConnectSSE(String url){
-    if(this.ev == null || this.httpClientBuilder == null){
-      return false;
-    }
-
+    Log.i("MY_SSE","Connecting to sse: " + url);
     Request.Builder reqBuilder = new Request.Builder()
             .get()
             .url(url)
@@ -108,7 +111,6 @@ public class MySSE extends ReactContextBaseJavaModule {
     ev = EventSources
             .createFactory(okHttpClient)
             .newEventSource(reqBuilder.build(),new MyEvSrcListener());
-
     return true;
   }
 
