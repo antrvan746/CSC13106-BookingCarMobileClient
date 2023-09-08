@@ -75,7 +75,7 @@ class DriverLocSSE {
     //this.Connect();
   }
   public Connect(driver_id: string) {
-    const success = this.MySSE.ConnectSSE(encodeURI(`http://10.0.2.2:3080/sse/driver_loc/${driver_id}`));
+    const success = this.MySSE.ConnectSSE(encodeURI(`http://10.0.2.2:3082/sse/driver_loc/${driver_id}`));
     console.log("Connecting to see result: ",success);
 
     this.isRunning = true;

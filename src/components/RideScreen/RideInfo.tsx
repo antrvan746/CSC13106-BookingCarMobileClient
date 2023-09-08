@@ -147,11 +147,8 @@ function RideInfo(props: RideInfoProps): JSX.Element {
           ]
         );
       });
-
-
     }
-
-  })
+  },[])
   return (<View>
 
     {appState.state == "Finding" ? <FindingDriver /> : null}

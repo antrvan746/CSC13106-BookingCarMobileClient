@@ -195,7 +195,6 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
 
   function OnDriverChangeLoc(lon: number, lat: number) {
     setDriverCoord({ lon, lat });
-    console.log("Map ref",mapViewRef.current);
     mapViewRef.current?.animateToRegion({
       latitude:lat,
       longitude:lon,

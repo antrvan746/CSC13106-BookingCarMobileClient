@@ -66,7 +66,7 @@ class RideWs {
     }
 
     const queries = Object.entries(info).map(([k, v]) => `${k}=${v}`).join("&");
-    const url = `ws://10.0.2.2:3080/ws/client/w3gv7?${queries}`;
+    const url = `ws://10.0.2.2:3081/ws/client/w3gv7?${queries}`;
     console.log("Creating websocket")
     this.ws = new WebSocket(encodeURI(url), "ws");
     //this.ws = new WebSocket(url,"ws");
@@ -131,6 +131,7 @@ class RideWs {
   private _onWsClose(e: WebSocketCloseEvent) {
     console.log(`Web socket closed. Code: ${e.code}. Reason: ${e.reason}`);
     this._onWsMessage({ data: e.reason });
+    
     this.client_listeners.onClose?.(e);
     this.Close();
   }
