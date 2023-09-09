@@ -1,0 +1,41 @@
+{
+  "code": "Ok",
+  "routes": [
+    {
+      "geometry": "qfz`AmnejSJLp@j@`@`@^^b@`@B@~@x@jCoDHM`CcDx@gAd@o@NWX]V]R[nDuEFGFKfAwAX_@Z]RWHKX]\\a@hC{CvBiCZ_@xBeC~AiBDGt@y@jBuBtCdCz@v@u@|@CBe@j@MNo@t@",
+      "legs": [
+        {
+          "steps": [],
+          "summary": "",
+          "weight": 140.3,
+          "duration": 140.3,
+          "distance": 1776.9
+        }
+      ],
+      "weight_name": "routability",
+      "weight": 140.3,
+      "duration": 140.3,
+      "distance": 1776.9
+    }
+  ],
+  "waypoints": [
+    {
+      "hint": "bsirhP___38JAAAADwAAADkAAAAAAAAATRd_QQ_8J0E7YcxCAAAAAAkAAAAPAAAAOQAAAAAAAAD0JQEApwFcBr6gpACNBFwG6p2kAAEADw7H89Mq",
+      "distance": 114.011002,
+      "name": "Đường Võ Thị Sáu",
+      "location": [
+        106.693031,
+        10.789054
+      ]
+    },
+    {
+      "hint": "EsmrhP___38jAAAAKgAAAFQAAABYAAAAIjAdQqOf7EB8ELlCWhyWQiMAAAAqAAAAVAAAAFgAAAD0JQEAuBlcBih9pAAUGVwGenykAAQAjxPH89Mq",
+      "distance": 26.30818,
+      "name": "Công Trường Công Xã Paris",
+      "location": [
+        106.699192,
+        10.779944
+      ]
+    }
+  ]
+}
