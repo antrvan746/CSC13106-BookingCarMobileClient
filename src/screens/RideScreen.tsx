@@ -1,5 +1,5 @@
 import React, { createRef, useEffect, useRef, useState } from "react";
-import { LayoutChangeEvent, StyleSheet, View } from "react-native";
+import { Alert, LayoutChangeEvent, StyleSheet, View } from "react-native";
 import BookVehicle from "../components/RideScreen/BookVehicle";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { selectAppState, updateAppState } from "../redux/AppState";
@@ -114,12 +114,12 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       if (data && data.routes.length > 0) {
         const distance = data.routes[0].distance / 1000;
         const time = data.routes[0].duration;
-        console.log("Pricing factor",distance,time);
+        console.log("Pricing factor", distance, time);
         const url = `http://10.0.2.2:3000/api/pricing?distance=${distance}&estimated_time=${time}`;
         try {
           const req = await fetch(encodeURI(url));
           const price = (await req.json()).price;
-          console.log("Trip price",price);
+          console.log("Trip price", price);
           if (price) {
             ride_price = price;
           }
@@ -167,6 +167,22 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       GetCoordinate();
     }
 
+    GlobalServices.RideWs.client_listeners.onNoDriver = () => {
+      dispatch(updateAppState({
+        state: "Book",
+      }))
+      Alert.alert("No Driver", "Hệ thống không tìm thấy tài xế phù hợp cho bạn", [], {
+        cancelable: true
+      });
+    }
+
+    GlobalServices.RideWs.client_listeners.onDriverAtPick = () => {
+      Alert.alert("Driver arrived", "Tài xế đã đến nơi đón, bạn hãy nhìn xung quanh xem !")
+    }
+
+    GlobalServices.RideWs.client_listeners.onTripStart = () => {
+      dispatch(updateAppState({ state: "Going" }));
+    }
 
   }, []);
 
@@ -196,8 +212,8 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
   function OnDriverChangeLoc(lon: number, lat: number) {
     setDriverCoord({ lon, lat });
     mapViewRef.current?.animateToRegion({
-      latitude:lat,
-      longitude:lon,
+      latitude: lat,
+      longitude: lon,
       latitudeDelta: 0.008,
       longitudeDelta: 0.008,
     });
@@ -209,7 +225,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
       {
         !coordinate ? null :
           <MapView
-            
+
             ref={mapViewRef}
             onLayout={onMapLayout}
             initialRegion={{
@@ -245,7 +261,7 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
         appState.state == "Book" ?
           <BookVehicle BookBtnPressCallBack={BookBtnClickHandler} price={rideReqInfo.price} />
           :
-          <RideInfo onDriverUpdate={OnDriverChangeLoc} req={rideReqInfo} onTripDone={()=>{
+          <RideInfo onDriverUpdate={OnDriverChangeLoc} req={rideReqInfo} onTripDone={() => {
             navigation.replace("Main")
           }} />
       }

@@ -19,7 +19,6 @@ function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
 
   const rideLocState = useAppSelector(selectRideLocationState);
   const dispatch = useAppDispatch();
-
   const setRideState = useRef<"Pick" | "Drop" | null>(null);
 
 
@@ -64,20 +63,12 @@ function SearchScreen({ navigation, route }: StackScreenProps): JSX.Element {
     <View style={styles.headerSearchContainer}>
       <SearchTxtInput
         service="LocationIQ"
-        {...(rideLocState.pickUp ?
-          { textValue: rideLocState.pickUp.name || rideLocState.pickUp.address || "Unknow" }
-          :
-          {}
-        )}
+        textValue={rideLocState?.pickUp?.name || rideLocState?.pickUp?.address || ""}
         iconName={"my-location"} color={"#237FEB"}
         onSuggestionFound={onPickSuggestionFound} />
       <SearchTxtInput
         service="LocationIQ"
-        {...(rideLocState.dropOff ?
-          { textValue: rideLocState.dropOff.name || rideLocState.dropOff.address || "Unknow" }
-          :
-          {}
-        )}
+        textValue={rideLocState?.dropOff?.name || rideLocState?.dropOff?.address || ""}
         iconName={"location-on"} color={"#EB3223"}
         onSuggestionFound={onPickDropSuggestionFound} />
 

@@ -107,14 +107,6 @@ function RideInfo(props: RideInfoProps): JSX.Element {
       CallUpdateDriver(loc);
     };
 
-    GlobalServices.RideWs.client_listeners.onDriverAtPick = () => {
-      Alert.alert("Driver arrived", "Tài xế đã đến nơi đón, bạn hãy nhìn xung quanh xem !")
-    }
-
-    GlobalServices.RideWs.client_listeners.onTripStart = () => {
-      dispatch(updateAppState({ state: "Going" }));
-    }
-
     GlobalServices.RideWs.client_listeners.onDriverAtDrop = () => {
       GlobalServices.RideWs.Close();
       GlobalServices.DriverLoc.Disconnect();

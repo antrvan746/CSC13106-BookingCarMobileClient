@@ -21,7 +21,7 @@ export interface RindeRequestInfo {
   "eadr": string,
 
   "user_id": string,
-  "price":number
+  "price": number
 }
 
 interface RideWsConstrucProps {
@@ -32,7 +32,8 @@ interface RideWsConstrucProps {
   onDriverFound?: (info: DriverInfo) => void,
   onDriverAtPick?: () => void,
   onDriverAtDrop?: () => void
-  onTripStart?:()=>void,
+  onTripStart?: () => void,
+  onNoDriver?: () => void,
 }
 
 class RideWs {
@@ -46,7 +47,7 @@ class RideWs {
     DriverArriveDrop: "DAD߷",
     TripId: "TID߷",
     Message: "MSG߷",
-    DriverStratTrip:"DST߷",
+    DriverStratTrip: "DST߷",
   }
   public client_listeners: RideWsConstrucProps
 
@@ -93,6 +94,7 @@ class RideWs {
     const cmd = msg.length <= 4 ? msg : msg.substring(0, 4)
     switch (cmd) {
       case RideWs.StatusMsg.NoDriver:
+        this.client_listeners?.onNoDriver?.()
         this.Close();
         break;
       case RideWs.StatusMsg.Message:
@@ -131,7 +133,7 @@ class RideWs {
   private _onWsClose(e: WebSocketCloseEvent) {
     console.log(`Web socket closed. Code: ${e.code}. Reason: ${e.reason}`);
     this._onWsMessage({ data: e.reason });
-    
+
     this.client_listeners.onClose?.(e);
     this.Close();
   }

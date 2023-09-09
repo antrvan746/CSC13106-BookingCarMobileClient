@@ -29,15 +29,10 @@ function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
 
   const [isEditing, setIsEditing] = useState<boolean>(textValue ? false : true)
   const lastFetchTime = useRef<number>(0);
-  const queryText = useRef<string>("");
+  const [queryText, setQueryText] = useState<string>(props.textValue || "");
 
   async function querySuggestion(text: string) {
     console.log("Search text", text);
-    // if (!loginState.user || !loginState.user.locationIQKey) {
-    //   console.log("User error");
-    //   return;
-    // }
-
 
     if (props.service === "LocationIQ") {
       const result = await queryTriggerIQ({
@@ -48,7 +43,7 @@ function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
         const sug: LocationCoordinate[] = result.data.map(s => ({
           name: s.display_name,
           id: s.place_id,
-          lat: parseFloat(s.lat) ,
+          lat: parseFloat(s.lat),
           lon: parseFloat(s.lon)
         }));
         onSuggestionFound(sug);
@@ -69,23 +64,7 @@ function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
   }
 
   function onTextChangeText(text: string) {
-    queryText.current = text;
-    /*
-    const inputTxtLen = text.split(" ").length;
-    if (lastFetchTime.current) {
-      clearTimeout(lastFetchTime.current);
-    }
-
-    lastFetchTime.current = setTimeout(function () {
-      if (inputTxtLen > 4) {
-        querySuggestion(text)
-      }
-    }, 4000);
-
-    if (!isEditing) {
-      setIsEditing(true);
-    }
-    */
+    setQueryText(text);
   }
 
   function onTextFoucus() {
@@ -101,7 +80,7 @@ function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
   }
 
   function onSearchSubmit() {
-    querySuggestion(queryText.current);
+    querySuggestion(queryText);
   }
 
   return (<View style={[GlobalStyles.propShadow, styles.textInputWrapper]}>
@@ -109,7 +88,7 @@ function SearchTxtInput(props: SearchTxtInputProps): JSX.Element {
       <Icon name={iconName} size={24} color={color} />
     </View>
     <TextInput
-      {...(!isEditing ? { value: textValue } : {})}
+      value={queryText}
       onFocus={onTextFoucus}
       onBlur={onTextBlur}
       onChangeText={onTextChangeText}
