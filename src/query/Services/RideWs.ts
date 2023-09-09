@@ -67,7 +67,7 @@ class RideWs {
     }
 
     const queries = Object.entries(info).map(([k, v]) => `${k}=${v}`).join("&");
-    const url = `ws://10.0.2.2:3081/ws/client/w3gv7?${queries}`;
+    const url = `ws://10.0.2.2:3581/ridehail/trip/ws/client/w3gv7?${queries}`;
     console.log("Creating websocket")
     this.ws = new WebSocket(encodeURI(url), "ws");
     //this.ws = new WebSocket(url,"ws");
