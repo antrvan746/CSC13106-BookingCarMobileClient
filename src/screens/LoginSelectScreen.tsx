@@ -14,6 +14,7 @@ import database from "@react-native-firebase/database"
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { UserDetailInfo, useAddUserDetailMutation, useLazyGetUserDetailQuery } from '../query/UserData';
 import UserDetailScreen from './UserDetailScreen';
+import { GetUserInfo } from '../query/Services/GlobalServices';
 
 const NavStack = createNativeStackNavigator<LoginStackParam>();
 
@@ -89,22 +90,12 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
   const dispatch = useAppDispatch();
   const loginState = useAppSelector(selectLoginState);
 
-  const [userDetailApiTrigger] = useLazyGetUserDetailQuery();
+  // const [userDetailApiTrigger] = useLazyGetUserDetailQuery();
 
 
-  const checkIsAlreadyUser = async function (phone:string) {
-    if(!phone){
-      return null;
-    }
-    try{
-      const res = await userDetailApiTrigger({phone}).unwrap()
-      if(!res){return null;}
-      return res.length < 0 || res[0].phone != phone ? null : res[0];
-    }catch(e){
-      console.log("checkIsAlreadyUser",e);
-    }
-    return null;
-
+  const checkIsAlreadyUser = async function (phone: string) {
+    const res = await GetUserInfo(phone);
+    return res;
   }
 
   const onAuthStateChanged: FBAuth.AuthListenerCallback = async function (user) {
@@ -120,38 +111,40 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
     }
 
     console.log("Login success");
-     const { email, phoneNumber, photoURL, providerId, uid, displayName } = user;
+    const { email, phoneNumber, photoURL, providerId, uid, displayName } = user;
 
-    const userDetailQuery = checkIsAlreadyUser(user.phoneNumber);
-    
-    const locationIQQuery = database().ref("/LocationIQ_KEY").once("value");
-    const [snap, userInfo] = await Promise.all([locationIQQuery, userDetailQuery]);
+    const userDetailQuery = await checkIsAlreadyUser(user.phoneNumber);
 
-    const locationIQKey = snap.val();
-    console.log("User detail ",userInfo);
+    const locationIQQuery = await database().ref("/LocationIQ_KEY").once("value");
+    //const [snap, userInfo] = await Promise.all([locationIQQuery, userDetailQuery]);
+
+    const locationIQKey = locationIQQuery.val();
+    console.log("User detail ", userDetailQuery);
     console.log("Login with locationIQ key", locationIQKey);
-    
+
 
     dispatch(setLoginState({
       user: {
         locationIQKey,
-        detail: userInfo || undefined
+        detail: userDetailQuery || undefined
       }
     }));
 
-    if(!userInfo){
+    if (!userDetailQuery) {
       console.log("Naviagting");
-      navigation.navigate("Detail",{user:{
-        phone: phoneNumber || "",
-        name: displayName,
-        email: email
-      }});
-    }else{
+      navigation.navigate("Detail", {
+        user: {
+          phone: phoneNumber || "",
+          name: displayName,
+          email: email
+        }
+      });
+    } else {
       navigation.navigate("Main");
     }
   }
 
-  function onSuccess(info:UserDetailInfo){
+  function onSuccess(info: UserDetailInfo) {
     dispatch(setLoginState({
       user: {
         ...loginState.user,
@@ -163,14 +156,14 @@ function LoginScreen({ navigation, route }: StackScreenProps) {
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    
+
     const user = auth().currentUser;
     onAuthStateChanged(user);
-    
+
     return () => {
       console.log("Unsub login listener");
       subscriber();
-    }; 
+    };
     //unsubscribe on unmount
   }, []);
 

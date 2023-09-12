@@ -1,4 +1,5 @@
 import { DriverInfo } from "../../components/RideScreen/RideInfo";
+import { UserDetailInfo } from "../UserData";
 import DriverLocSSE from "./DriverLocSSE";
 import RideWs from "./RideWs";
 
@@ -28,7 +29,21 @@ async function GetDriverFullInfo(driver_id: string) {
     return error as Error;
   }
 }
+
+async function GetUserInfo(phone: string) {
+  try {
+    const req = await fetch(`http://10.0.2.2:3080/api/users?phone=${phone.replace("+84", "0")}`);
+    const json = (await req.json()) as UserDetailInfo[];
+    console.log(json);
+    return json[0] || null;
+  } catch (e) {
+    console.warn(e)
+    return null;
+  }
+}
+
 export {
+  GetUserInfo,
   GetPricing,
   GetDriverFullInfo
 }
