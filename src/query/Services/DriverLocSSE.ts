@@ -1,4 +1,5 @@
 import ReactNative, { NativeEventEmitter } from "react-native";
+import Links from "../globals/RideWebLinks"
 interface MySSEConst {
   OPEN_EVENT: string,
   MSG_EVENT: string,
@@ -75,7 +76,7 @@ class DriverLocSSE {
     //this.Connect();
   }
   public Connect(driver_id: string) {
-    const success = this.MySSE.ConnectSSE(encodeURI(`http://10.0.2.2:3581/ridehail/sse/sse/driver_loc/${driver_id}`));
+    const success = this.MySSE.ConnectSSE(encodeURI(`${Links.client_driver_sse}/${driver_id}`));
     console.log("Connecting to see result: ", success);
 
     this.isRunning = true;

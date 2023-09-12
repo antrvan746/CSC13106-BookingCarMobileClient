@@ -28,7 +28,7 @@ const UserDetailApi = createApi({
       query:({phone}) => ({
         url:"",
         method:"GET",
-        params:{phone,limit:1}
+        params:{phone,limit:1,skip:0}
       })
     }),
     addUserDetail: builder.mutation<UserDetailInfo,PostUserDetailBody>({

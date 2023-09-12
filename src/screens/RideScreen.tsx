@@ -11,7 +11,7 @@ import { useLazyGetGeocodeFromIdQuery } from "../query/GoogleGeocode";
 import MapViewDirections from "react-native-maps-directions";
 import { LocationIQ_Directions, useLazyGetRouteQuery } from "../query/LocationIQ";
 import polyline from "@mapbox/polyline"
-import GlobalServices from "../query/Services/GlobalServices";
+import GlobalServices, { GetPricing } from "../query/Services/GlobalServices";
 import { RindeRequestInfo } from "../query/Services/RideWs";
 import { selectLoginState } from "../redux/LoginState";
 //google map place auto complete -> google map geocode
@@ -115,16 +115,11 @@ function RideScreen({ navigation, route }: StackScreenProps): JSX.Element {
         const distance = data.routes[0].distance / 1000;
         const time = data.routes[0].duration;
         console.log("Pricing factor", distance, time);
-        const url = `http://10.0.2.2:3000/api/pricing?distance=${distance}&estimated_time=${time}`;
-        try {
-          const req = await fetch(encodeURI(url));
-          const price = (await req.json()).price;
-          console.log("Trip price", price);
-          if (price) {
-            ride_price = price;
-          }
-        } catch (e) {
-          console.log("Get price error: ", e)
+        const res = await GetPricing(distance, time);
+        if (typeof res == "number") {
+          ride_price = res
+        }else{
+          console.warn(res);
         }
       }
 

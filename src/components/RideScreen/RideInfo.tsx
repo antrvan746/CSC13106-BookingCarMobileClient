@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react"
-import { Alert, Modal, StyleSheet, Text, View } from "react-native"
+import { Alert, StyleSheet, Text, View } from "react-native"
 import Icon from "react-native-vector-icons/MaterialIcons"
 import { GlobalStyles } from "../../styles/colors"
 import { useAppDispatch, useAppSelector } from "../../redux/hooks"
 import { selectAppState, updateAppState } from "../../redux/AppState"
-import GlobalServices from "../../query/Services/GlobalServices"
+import GlobalServices, { GetDriverFullInfo } from "../../query/Services/GlobalServices"
 import { RindeRequestInfo } from "../../query/Services/RideWs"
 
-interface DriverInfo {
+export interface DriverInfo {
   phone: string;
   name: string;
   vehicle: {
@@ -70,7 +70,7 @@ function DriverInfo(driver: DriverInfo) {
 
 interface RideInfoProps {
   onDriverUpdate: (lon: number, lat: number) => void,
-  onTripDone: ()=>void,
+  onTripDone: () => void,
   req: RindeRequestInfo,
 }
 
@@ -84,51 +84,41 @@ function RideInfo(props: RideInfoProps): JSX.Element {
     props.onDriverUpdate(loc.lon, loc.lat);
   }
 
-  const GetDriverInfo = async function (driver_id: string) {
-    try {
-      const req = await fetch(encodeURI(`http://10.0.2.2:3000/api/drivers/find_info?driver_id=${driver_id}`));
-      if (req.status !== 200) {
-        console.log(await req.json())
-        return null;
-      }
-      return (await req.json()) as DriverInfo;
-    } catch (error) {
-      console.warn(error);
-      return null;
-    }
-  }
+
 
   console.log(driverInfo);
 
   useEffect(() => {
     console.log("Connecting to websocket");
     //GlobalServices.RideWs.Connect();
-    GlobalServices.DriverLoc.listeners.onDriverLoc = (loc)=>{
+    GlobalServices.DriverLoc.listeners.onDriverLoc = (loc) => {
       CallUpdateDriver(loc);
     };
 
     GlobalServices.RideWs.client_listeners.onDriverAtDrop = () => {
       GlobalServices.RideWs.Close();
       GlobalServices.DriverLoc.Disconnect();
-      Alert.alert("You has arrived", "Bạn đã tới đích của bạn. ",[],{
-        cancelable:true,
-        onDismiss: ()=>{
+      Alert.alert("You has arrived", "Bạn đã tới đích của bạn. ", [], {
+        cancelable: true,
+        onDismiss: () => {
           props.onTripDone();
         }
       });
-      
+
     }
 
     GlobalServices.RideWs.client_listeners.onDriverFound = (i) => {
-      GetDriverInfo(i.driver_id).then(v => {
+      GetDriverFullInfo(i.driver_id).then(v => {
         console.log("Watch driver location: ", i.driver_id)
         GlobalServices.DriverLoc.Connect(i.driver_id);
-        dispatch(updateAppState({ state: "Waiting" }));        
-        setDriverInfo(v);
-        if (v == null) {
-          console.warn("Cant find driver info")
-          return;
+        dispatch(updateAppState({ state: "Waiting" }));
+
+        if (v instanceof Error) {
+          console.warn(v);
+          setDriverInfo(null)
+          return
         }
+        setDriverInfo(v);
         const msg = `
         Driver name: ${v.name}
         Vehicle: ${v.vehicle.model}
@@ -140,7 +130,7 @@ function RideInfo(props: RideInfoProps): JSX.Element {
         );
       });
     }
-  },[])
+  }, [])
   return (<View>
 
     {appState.state == "Finding" ? <FindingDriver /> : null}
